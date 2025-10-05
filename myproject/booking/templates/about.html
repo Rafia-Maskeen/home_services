@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="bg-gradient-to-br from-[#FFF1E6] to-[#FFEBD1] py-20 px-6 md:px-24">
+  <div class="flex flex-col-reverse lg:flex-row items-center justify-between gap-12">
+    <div class="w-full lg:w-1/2" data-aos="fade-right">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-[#FF6B00] mb-6 leading-tight">Who We Are</h1>
+      <p class="text-[#2D2D2D] text-lg mb-6">
+        HomeService is a modern platform that connects you with top-rated service professionals for all your home needs — from cleaning and repair to installation and more.
+      </p>
+      <a href="{% url 'services' %}" class="inline-block bg-[#FF6B00] hover:bg-[#e85d00] text-white py-3 px-6 rounded-xl shadow-md transition">Explore Services</a>
+    </div>
+    <div class="w-full lg:w-1/2" data-aos="fade-left">
+      <img src="{% static '1.1.png' %}" alt="About HomeService" class="rounded-3xl w-full shadow-xl">
+    </div>
+  </div>
+</section>
+
+<!-- 👥 Our Team Section -->
+<section class="bg-white py-20 px-6 md:px-24">
+  <h2 class="text-center text-3xl font-bold text-[#FF6B00] mb-12" data-aos="fade-up">Meet Our Team</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 text-center">
+    <!-- Team Member 1 -->
+    <div class="bg-[#FFF9F0] p-6 rounded-2xl shadow-md hover:shadow-lg transition" data-aos="zoom-in">
+      <img src="{% static 'iamges 2.jpeg' %}" alt="John" 
+           class="w-28 h-28 mx-auto rounded-full mb-4 shadow-md transition duration-500 transform hover:scale-110 hover:rotate-3 hover:shadow-xl" 
+           data-aos="zoom-in">
+      <h4 class="text-xl font-semibold text-[#FF6B00]">John Doe</h4>
+    </div>
+
+    <!-- Team Member 2 -->
+    <div class="bg-[#FFF9F0] p-6 rounded-2xl shadow-md hover:shadow-lg transition" data-aos="zoom-in" data-aos-delay="100">
+      <img src="{% static '3.webp' %}" alt="Sara" 
+           class="w-28 h-28 mx-auto rounded-full mb-4 shadow-md transition duration-500 transform hover:scale-110 hover:rotate-3 hover:shadow-xl"
+           data-aos="zoom-in">
+      <h4 class="text-xl font-semibold text-[#FF6B00]">Sara Ali</h4>
+    </div>
+
+    <!-- Team Member 3 -->
+    <div class="bg-[#FFF9F0] p-6 rounded-2xl shadow-md hover:shadow-lg transition" data-aos="zoom-in" data-aos-delay="200">
+      <img src="{% static 'images.jpeg' %}" alt="Ali" 
+           class="w-28 h-28 mx-auto rounded-full mb-4 shadow-md transition duration-500 transform hover:scale-110 hover:rotate-3 hover:shadow-xl"
+           data-aos="zoom-in">
+      <h4 class="text-xl font-semibold text-[#FF6B00]">Ali Khan</h4>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="bg-[#FFF9F0] py-20 px-6 md:px-24">
+  <h2 class="text-center text-3xl font-bold text-[#FF6B00] mb-12" data-aos="fade-up">Why Choose HomeService?</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+    <!-- Feature 1 -->
+    <div class="p-6 bg-white rounded-2xl shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-2xl active:scale-100 cursor-pointer" data-aos="zoom-in">
+      <img src="{% static '4713692.png' %}" class="w-16 mx-auto mb-4" alt=""> 
+      <h4 class="text-xl font-semibold mb-2 text-[#FF6B00]">Trusted Experts</h4>
+      <p class="text-[#444]">All our professionals are background checked and trained for quality service.</p>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="p-6 bg-white rounded-2xl shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-2xl active:scale-100 cursor-pointer" data-aos="zoom-in" data-aos-delay="150">
+      <img src="{% static '929426.png' %}" class="w-16 mx-auto mb-4" alt="">
+      <h4 class="text-xl font-semibold mb-2 text-[#FF6B00]">Instant Booking</h4>
+      <p class="text-[#444]">Book any service instantly with real-time confirmation and support.</p>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="p-6 bg-white rounded-2xl shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-2xl active:scale-100 cursor-pointer" data-aos="zoom-in" data-aos-delay="300">
+      <img src="{% static '5539729.png' %}" class="w-16 mx-auto mb-4" alt="">
+      <h4 class="text-xl font-semibold mb-2 text-[#FF6B00]">Affordable Pricing</h4>
+      <p class="text-[#444]">We ensure top quality at prices that are light on your pocket.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="py-20 bg-gradient-to-r from-[#FFF1E6] via-[#FFE4CC] to-[#FFF1E6] text-center">
+  <div class="max-w-3xl mx-auto px-6">
+    <h2 class="text-4xl font-extrabold mb-4 text-[#FF6B00] leading-snug">Need Quick Help at Home?</h2>
+    <p class="text-lg mb-8 text-[#2D2D2D] opacity-90">
+      Book expert services in just a few taps. We’re here 24/7 for your comfort, safety, and peace of mind.
+    </p>
+    <a href="{% url 'services' %}" class="bg-[#FF6B00] text-white hover:bg-[#e85d00] font-semibold py-3 px-8 rounded-xl shadow-lg transition-transform transform hover:scale-105">
+      Book a Service Now
+    </a>
+  </div>
+</section>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="bg-gradient-to-br from-[#FFF1E6] to-[#FFEBD1] py-20 px-6 md:px-24">
+  <div class="flex flex-col-reverse lg:flex-row items-center justify-between gap-12">
+    <div class="w-full lg:w-1/2" data-aos="fade-right">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-[#FF6B00] mb-6 leading-tight">Who We Are</h1>
+      <p class="text-[#2D2D2D] text-lg mb-6">
+        HomeService is a modern platform that connects you with top-rated service professionals for all your home needs — from cleaning and repair to installation and more.
+      </p>
+      <a href="{% url 'services' %}" class="inline-block bg-[#FF6B00] hover:bg-[#e85d00] text-white py-3 px-6 rounded-xl shadow-md transition">Explore Services</a>
+    </div>
+    <div class="w-full lg:w-1/2" data-aos="fade-left">
+      <img src="{% static '1.1.png' %}" alt="About HomeService" class="rounded-3xl w-full shadow-xl">
+
+    </div>
+  </div>
+</section>
+
+<!-- 👥 Our Team Section -->
+<section class="bg-white py-20 px-6 md:px-24">
+  <h2 class="text-center text-3xl font-bold text-[#FF6B00] mb-12" data-aos="fade-up">Meet Our Team</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 text-center">
+    <!-- Team Member 1 -->
+    <div class="bg-[#FFF9F0] p-6 rounded-2xl shadow-md hover:shadow-lg transition" data-aos="zoom-in">
+      <img src="{% static 'iamges 2.jpeg' %}" alt="John" class="w-28 h-28 mx-auto rounded-full mb-4 shadow-md">
+      <h4 class="text-xl font-semibold text-[#FF6B00]">John Doe</h4>
+      
+    </div>
+
+    <!-- Team Member 2 -->
+    <div class="bg-[#FFF9F0] p-6 rounded-2xl shadow-md hover:shadow-lg transition" data-aos="zoom-in" data-aos-delay="100">
+      <img src="{% static '3.webp' %}" alt="Sarah" class="w-28 h-28 mx-auto rounded-full mb-4 shadow-md">
+      <h4 class="text-xl font-semibold text-[#FF6B00]">Sara Ali</h4>
+      
+    </div>
+
+    <!-- Team Member 3 -->
+    <div class="bg-[#FFF9F0] p-6 rounded-2xl shadow-md hover:shadow-lg transition" data-aos="zoom-in" data-aos-delay="200">
+      <img src="{% static 'images.jpeg' %}" alt="Michael" class="w-28 h-28 mx-auto rounded-full mb-4 shadow-md">
+      <h4 class="text-xl font-semibold text-[#FF6B00]">Ali Khan</h4>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="bg-[#FFF9F0] py-20 px-6 md:px-24">
+  <h2 class="text-center text-3xl font-bold text-[#FF6B00] mb-12" data-aos="fade-up">Why Choose HomeService?</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+    <div data-aos="zoom-in" class="p-6 bg-white rounded-2xl shadow-lg hover:scale-105 transition">
+       <img src="{% static "4713692.png" %}" class="w-16 mx-auto mb-4" alt=""> 
+      
+      <h4 class="text-xl font-semibold mb-2 text-[#FF6B00]">Trusted Experts</h4>
+      <p class="text-[#444]">All our professionals are background checked and trained for quality service.</p>
+    </div>
+    <div data-aos="zoom-in" data-aos-delay="150" class="p-6 bg-white rounded-2xl shadow-lg hover:scale-105 transition">
+      <img src="{% static "929426.png" %}" class="w-16 mx-auto mb-4" alt="">
+  
+      <h4 class="text-xl font-semibold mb-2 text-[#FF6B00]">Instant Booking</h4>
+      <p class="text-[#444]">Book any service instantly with real-time confirmation and support.</p>
+    </div>
+    <div data-aos="zoom-in" data-aos-delay="300" class="p-6 bg-white rounded-2xl shadow-lg hover:scale-105 transition">
+      <img src="{% static "5539729.png" %}" class="w-16 mx-auto mb-4" alt="">
+
+      <h4 class="text-xl font-semibold mb-2 text-[#FF6B00]">Affordable Pricing</h4>
+      <p class="text-[#444]">We ensure top quality at prices that are light on your pocket.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Final Call to Action (Light Version) -->
+<section class="py-20 bg-gradient-to-r from-[#FFF1E6] via-[#FFE4CC] to-[#FFF1E6] text-center">
+  <div class="max-w-3xl mx-auto px-6">
+    <h2 class="text-4xl font-extrabold mb-4 text-[#FF6B00] leading-snug">Need Quick Help at Home?</h2>
+    <p class="text-lg mb-8 text-[#2D2D2D] opacity-90">
+      Book expert services in just a few taps. We’re here 24/7 for your comfort, safety, and peace of mind.
+    </p>
+    <a href="{% url 'services' %}" class="bg-[#FF6B00] text-white hover:bg-[#e85d00] font-semibold py-3 px-8 rounded-xl shadow-lg transition-transform transform hover:scale-105">
+      Book a Service Now
+    </a>
+  </div>
+</section>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ {% endcomment %}

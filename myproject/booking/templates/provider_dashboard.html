@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="min-h-screen bg-gradient-to-br from-[#FFEFBA] to-[#FFFFFF] py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
+  <div class="container mx-auto max-w-4xl">
+    <!-- Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="mb-3 sm:mb-4 p-3 sm:p-4 {% if message.tags == 'error' %}bg-red-500{% else %}bg-green-500{% endif %} text-white rounded-lg sm:rounded-xl font-semibold text-center text-sm sm:text-base">
+          {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-center text-[#FF6B00] mb-4 sm:mb-6 lg:mb-8">Provider Dashboard</h2>
+
+    <!-- Add Service Button -->
+    <div class="mb-4 sm:mb-6 lg:mb-8 text-center">
+      <button id="openModal" class="px-4 sm:px-6 py-2 sm:py-3 bg-[#FF6B00] text-white font-semibold rounded-lg sm:rounded-xl hover:bg-[#e85d00] transition duration-300 text-sm sm:text-base">
+        Add New Service
+      </button>
+    </div>
+
+    <!-- Provider's Bookings -->
+    <div class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8 mb-6 sm:mb-8">
+      <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Your Bookings</h3>
+      {% if bookings %}
+        <div class="overflow-x-auto">
+          <table class="w-full text-left min-w-[40rem]">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="p-2 sm:p-3">Customer</th>
+                <th class="p-2 sm:p-3">Service</th>
+                <th class="p-2 sm:p-3">Date</th>
+                <th class="p-2 sm:p-3">Time</th>
+                <th class="p-2 sm:p-3">Status</th>
+                <th class="p-2 sm:p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for booking in bookings %}
+                <tr class="border-t">
+                  <td class="p-2 sm:p-3">{{ booking.customer.username }}</td>
+                  <td class="p-2 sm:p-3">{{ booking.service.title }}</td>
+                  <td class="p-2 sm:p-3">{{ booking.date }}</td>
+                  <td class="p-2 sm:p-3">{{ booking.time }}</td>
+                  <td class="p-2 sm:p-3">{{ booking.get_status_display }}</td>
+                  <td class="p-2 sm:p-3">
+                    {% if booking.status == 'pending' %}
+                      <form action="{% url 'accept_booking' booking.id %}" method="post" class="inline-block mr-1 sm:mr-2">
+                        {% csrf_token %}
+                        <button type="submit" class="px-2 sm:px-4 py-1 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs sm:text-sm">Accept</button>
+                      </form>
+                      <form action="{% url 'deny_booking' booking.id %}" method="post" class="inline-block">
+                        {% csrf_token %}
+                        <button type="submit" class="px-2 sm:px-4 py-1 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs sm:text-sm">Deny</button>
+                      </form>
+                    {% else %}
+                      <span class="text-gray-500 text-xs sm:text-sm">No actions available</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-gray-600 text-center text-sm sm:text-base">No bookings available.</p>
+      {% endif %}
+    </div>
+
+    <!-- Provider's Reviews -->
+    <div class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8">
+      <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Reviews for Your Services</h3>
+      {% if reviews %}
+        <div class="space-y-3 sm:space-y-4">
+          {% for review in reviews %}
+            <div class="border rounded-lg sm:rounded-xl p-3 sm:p-4">
+              <h4 class="font-medium text-gray-900 text-base sm:text-lg mb-1 sm:mb-2">{{ review.booking.service.title }}</h4>
+              <p class="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-2">Customer: {{ review.booking.customer.username }}</p>
+              <div class="flex items-center mb-2 sm:mb-3">
+                <div class="flex items-center">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}
+                      <svg class="w-3 sm:w-4 h-3 sm:h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    {% else %}
+                      <svg class="w-3 sm:w-4 h-3 sm:h-4 text-gray-300 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+                <span class="ml-1 sm:ml-2 text-gray-600 text-xs sm:text-sm font-medium">{{ review.rating }}/5</span>
+              </div>
+              <p class="text-gray-700 text-xs sm:text-sm mb-1 sm:mb-2 line-clamp-3">{{ review.comment }}</p>
+              <p class="text-gray-500 text-xs">{{ review.created_at|date:"M j, Y" }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-600 text-center text-sm sm:text-base">No reviews for your services yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="addServiceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 w-full max-w-xs sm:max-w-md shadow-lg sm:shadow-2xl">
+      <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Add New Service</h3>
+      <form method="post" enctype="multipart/form-data" class="space-y-4 sm:space-y-6">
+        {% csrf_token %}
+        {% if form.errors %}
+          <div class="text-red-600 text-xs sm:text-sm mb-3 sm:mb-4">
+            <ul>
+              {% for field in form %}
+                {% for error in field.errors %}
+                  <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Title</label>
+          {{ form.title }}
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
+          {{ form.description }}
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Price</label>
+          {{ form.price }}
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Service Type</label>
+          {{ form.service_type }}
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Image (Optional)</label>
+          {{ form.image }}
+        </div>
+        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+          <button type="button" id="closeModal" class="px-3 sm:px-4 py-1 sm:py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 text-xs sm:text-sm">
+            Cancel
+          </button>
+          <button type="submit" class="px-3 sm:px-4 py-1 sm:py-2 bg-[#FF6B00] text-white rounded-lg hover:bg-[#e85d00] text-xs sm:text-sm">
+            Add Service
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded'); // Debug log
+    const openModalBtn = document.getElementById('openModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const modal = document.getElementById('addServiceModal');
+
+    if (!openModalBtn || !closeModalBtn || !modal) {
+      console.error('One or more modal elements not found:', { openModalBtn, closeModalBtn, modal });
+      return;
+    }
+
+    console.log('Modal elements found', { openModalBtn, closeModalBtn, modal }); // Debug log
+    openModalBtn.addEventListener('click', () => {
+      console.log('Open button clicked'); // Debug log
+      modal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      console.log('Close button clicked'); // Debug log
+      modal.classList.add('hidden');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        console.log('Clicked outside modal'); // Debug log
+        modal.classList.add('hidden');
+      }
+    });
+  });
+</script>
+{% endblock %}

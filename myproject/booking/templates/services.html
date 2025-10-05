@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Section Title -->
+<section class="text-center py-16 bg-gradient-to-r from-[#FF6B00]/10 to-[#FFE8CC]">
+  <h2 class="text-4xl font-extrabold text-[#FF6B00]" data-aos="fade-down">Our Top Services</h2>
+  <p class="text-[#444] mt-2 text-lg" data-aos="fade-up" data-aos-delay="100">
+    {% if request.user.is_authenticated and request.user.role == 'provider' %}
+      Manage your services below.
+    {% else %}
+      Choose the right service that suits your needs.
+    {% endif %}
+  </p>
+</section>
+
+<!-- Services Grid -->
+<section class="py-16 px-6 md:px-20 bg-[#FFF3E0]">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+    {% if services %}
+      {% for service in services %}
+        <div class="relative overflow-hidden rounded-3xl shadow-xl group transition-all duration-300 hover:scale-[1.02] bg-white flex flex-col" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+
+          <!-- Optional: Popular Badge -->
+          <span class="absolute top-4 left-4 bg-yellow-400 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
+            Popular
+          </span>
+
+          <!-- Service Image -->
+          {% if service.image %}
+            <img src="{{ service.image.url }}" alt="{{ service.title }}"
+                 class="w-full h-[330px] object-cover transform group-hover:scale-110 transition duration-500" />
+          {% else %}
+            <img src="{% static 'images/placeholder.jpg' %}" alt="No Image"
+                 class="w-full h-[330px] object-cover transform group-hover:scale-110 transition duration-500" />
+          {% endif %}
+
+          <!-- Content Section -->
+          <div class="flex flex-col justify-center text-center p-6 bg-white/90 backdrop-blur-md">
+
+            <!-- Title -->
+            <h3 class="text-2xl font-extrabold text-[#FF6B00] mb-2">{{ service.title }}</h3>
+
+            <!-- Provider Name -->
+            <p class="text-sm text-yellow-600 font-bold mb-1">Provided by: {{ service.manager.username }}</p>
+
+            <!-- Static Rating (update later to dynamic if needed) -->
+            <div class="flex justify-center gap-1 text-yellow-400 text-sm mb-2">
+              ★ ★ ★ ★ ☆
+            </div>
+
+            <!-- Description -->
+            <p class="text-sm text-gray-700 mb-3">{{ service.description|truncatewords:18 }}</p>
+
+            <!-- Price -->
+            <p class="text-sm text-gray-800 font-bold mb-4">Rs. {{ service.price }}</p>
+
+            <!-- View More Button -->
+            <div class="flex justify-center">
+              <a href="{% url 'service_detail' service.id %}"
+                 class="transition-all duration-300 transform hover:scale-105 hover:shadow-md text-sm px-5 py-2 bg-[#FF6B00] text-white font-semibold rounded-full hover:bg-orange-600">
+                View More
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-gray-600 text-center col-span-full">No services available.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

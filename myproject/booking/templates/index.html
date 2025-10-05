@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- ✅ Flash Messages -->
+{% if messages %}
+  <div class="max-w-xl mx-auto mt-8 px-4">
+    {% for message in messages %}
+      <div class="p-4 rounded-xl text-white font-medium text-center shadow-lg
+        {% if message.tags == 'success' %}
+          bg-green-500
+        {% elif message.tags == 'error' %}
+          bg-red-500
+        {% else %}
+          bg-gray-600
+        {% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- ✅ Hero Section -->
+<section class="bg-gradient-to-br from-[#FF6B00] to-[#FFA500] text-white py-24 text-center px-4">
+  <h1 class="text-5xl md:text-6xl font-extrabold mb-4" data-aos="zoom-in">Book Home Services Instantly</h1>
+  <p class="text-lg md:text-xl mb-6 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="150">
+    Cleaning, Repairs, AC Service, Electrician & More
+  </p>
+  <a href="{% url 'services' %}" class="bg-white text-[#FF6B00] px-6 py-3 rounded-full font-bold hover:bg-[#FFD700] hover:text-[#2D2D2D] transition-all" data-aos="fade-up" data-aos-delay="300">Book Now</a>
+</section>
+
+<!-- ✅ Top Services -->
+<section class="py-20 bg-[#FFF9F0] px-4">
+  <div class="max-w-7xl mx-auto text-center">
+    <h2 class="text-3xl font-bold mb-14 text-[#2D2D2D]" data-aos="fade-up">Top Services</h2>
+
+    <div class="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {% for service in top_services %}
+        <div class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 group" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+          
+          <!-- Image with hover zoom -->
+          <div class="overflow-hidden rounded-t-3xl">
+            <img src="{{ service.image.url }}" alt="{{ service.name }}"
+                 class="w-full h-52 object-cover transform group-hover:scale-110 transition duration-500">
+          </div>
+
+          <!-- Content -->
+          <div class="p-5 text-left">
+            <h4 class="text-lg font-semibold text-gray-800">{{ service.title }}</h4>
+
+            <span class="block text-lg text-[#FF6B00] font-bold">Rs. {{ service.price }}</span>
+            <a href="{% url 'booking' service.id %}" class="inline-block mt-4 text-sm font-medium text-[#FF6B00] bg-[#FFE6CC] px-4 py-2 rounded-full hover:bg-[#FFD9B3] transition">📅 Book Now</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- View All Button -->
+    <div class="mt-12">
+      <a href="{% url 'services' %}" class="inline-block bg-[#FF6B00] text-white px-6 py-3 rounded-full hover:bg-[#FFA500] font-semibold transition">View All Services</a>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+<!-- ✅ How It Works -->
+<section class="py-16 bg-[#FFF9F0] px-4">
+  <div class="max-w-6xl mx-auto text-center">
+    <h2 class="text-3xl font-bold mb-12" data-aos="fade-up">How It Works</h2>
+    <div class="grid gap-10 grid-cols-1 md:grid-cols-3">
+      <div data-aos="fade-right">
+        <div class="text-5xl mb-3">📱</div>
+        <h4 class="font-semibold text-lg">Choose a Service</h4>
+      </div>
+      <div data-aos="fade-up">
+        <div class="text-5xl mb-3">📆</div>
+        <h4 class="font-semibold text-lg">Pick a Date</h4>
+      </div>
+      <div data-aos="fade-left">
+        <div class="text-5xl mb-3">🏠</div>
+        <h4 class="font-semibold text-lg">Relax, We’ll Handle It</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ✅ Chat Widget Placeholder (Bottom Right) -->
+<!-- <div class="fixed bottom-5 right-5 z-50">
+  <button class="bg-[#FF6B00] text-white px-4 py-3 rounded-full shadow-xl hover:bg-[#FFA500] transition">
+    💬 Chat with us
+  </button>
+</div> -->
+
+<!-- ✅ Auto-hide Flash Message -->
+<script>
+  setTimeout(() => {
+    const alertBox = document.querySelector('[class*="bg-green-500"], [class*="bg-red-500"], [class*="bg-gray-600"]');
+    if (alertBox) alertBox.style.display = 'none';
+  }, 4000);
+</script>
+
+{% endblock %}
