@@ -96,7 +96,7 @@ class PaymentProofForm(forms.ModelForm):
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['title', 'description', 'price', 'service_type', 'image']
+        fields = ['title', 'description', 'service_type', 'image']  # price removed
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full p-3 rounded-xl border border-gray-300',
@@ -107,12 +107,6 @@ class ServiceForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'Describe your service'
             }),
-            'price': forms.NumberInput(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300',
-                'placeholder': 'Price',
-                'min': 0,
-                'step': '0.01'
-            }),
             'service_type': forms.Select(attrs={
                 'class': 'w-full p-3 rounded-xl border border-gray-300'
             }),
@@ -120,3 +114,8 @@ class ServiceForm(forms.ModelForm):
                 'class': 'w-full p-3 rounded-xl border border-gray-300'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .models import ServiceType
+        self.fields['service_type'].queryset = ServiceType.objects.all()

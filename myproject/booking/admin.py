@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import get_user_model
-from .models import CustomUser, Service, Booking, Review, PaymentProof
+from .models import CustomUser, Service, Booking, Review, PaymentProof,ServiceType
 from django.db import transaction
 
 User = get_user_model()
@@ -21,7 +21,7 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('title', 'manager', 'price', 'service_type')
+    list_display = ('title', 'manager', 'service_type')
     search_fields = ('title', 'description', 'manager__username')
     list_filter = ('service_type',)
 
@@ -119,3 +119,8 @@ class PaymentProofAdmin(admin.ModelAdmin):
                 f'The payment proof for booking {obj.booking.id} was approved successfully and Rs. {service_price} added to {provider.username}\'s wallet.'
             )
         super().save_model(request, obj, form, change)
+
+@admin.register(ServiceType)
+class ServiceTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
