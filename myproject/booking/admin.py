@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import get_user_model
-from .models import CustomUser, Service, Booking, Review, PaymentProof,ServiceType
+from .models import CustomUser, Service, Booking, Review, PaymentProof, ServiceType
 from django.db import transaction
 
 User = get_user_model()
@@ -21,7 +21,7 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('title', 'manager', 'service_type')
+    list_display = ('title', 'manager', 'service_type', 'price')
     search_fields = ('title', 'description', 'manager__username')
     list_filter = ('service_type',)
 
@@ -46,7 +46,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'customer', 'service', 'date', 'time', 'status')
+    list_display = ('id', 'customer', 'service', 'date', 'time', 'status', 'completion_price')
     list_filter = ('status', 'date', 'service')
     search_fields = ('customer__username', 'service__title')
 
@@ -94,12 +94,13 @@ class PaymentProofAdmin(admin.ModelAdmin):
     def approve_payment_proofs(self, request, queryset):
         with transaction.atomic():
             for payment_proof in queryset:
-                if payment_proof.status != 'approved':
+                if payment_proof.status != 'approved' and payment_proof.booking.status == 'awaiting_payment':
                     payment_proof.status = 'approved'
+                    payment_proof.booking.status = 'completed'
                     payment_proof.save()
-                    booking = payment_proof.booking
-                    provider = booking.service.manager
-                    service_price = booking.service.price
+                    payment_proof.booking.save()
+                    provider = payment_proof.booking.service.manager
+                    service_price = payment_proof.booking.completion_price or payment_proof.booking.service.price
                     provider.wallet_balance += service_price
                     provider.save()
                     self.message_user(
@@ -108,10 +109,11 @@ class PaymentProofAdmin(admin.ModelAdmin):
                     )
 
     def save_model(self, request, obj, form, change):
-        if 'status' in form.changed_data and obj.status == 'approved':
-            booking = obj.booking
-            provider = booking.service.manager
-            service_price = booking.service.price
+        if 'status' in form.changed_data and obj.status == 'approved' and obj.booking.status == 'awaiting_payment':
+            obj.booking.status = 'completed'
+            obj.booking.save()
+            provider = obj.booking.service.manager
+            service_price = obj.booking.completion_price or obj.booking.service.price
             provider.wallet_balance += service_price
             provider.save()
             self.message_user(

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.contrib import messages
 from .models import Service, Booking, Review, PaymentProof
-from .forms import BookingForm, ReviewForm, RegisterForm, LoginForm, PaymentProofForm, ServiceForm
+from .forms import BookingForm, ReviewForm, RegisterForm, LoginForm, PaymentProofForm, ServiceForm, CompleteServiceForm
 
 def index(request):
     top_services = Service.objects.all()
@@ -206,16 +206,39 @@ def deny_booking(request, booking_id):
 
 @login_required
 @transaction.atomic
+def complete_booking(request, booking_id):
+    if request.user.role != 'provider':
+        messages.error(request, 'You are not authorized to perform this action.')
+        return redirect('index')
+    booking = get_object_or_404(Booking, id=booking_id, service__manager=request.user)
+    if request.method == 'POST':
+        form = CompleteServiceForm(request.POST, instance=booking)
+        if form.is_valid() and booking.status == 'confirmed':
+            booking = form.save(commit=False)
+            booking.status = 'awaiting_payment'
+            booking.save()
+            messages.success(request, f'Booking {booking.id} marked as completed. Awaiting payment proof.')
+            return redirect('provider_dashboard')
+        else:
+            messages.error(request, 'Invalid price or booking status.')
+    else:
+        form = CompleteServiceForm(instance=booking)
+    return render(request, 'complete_booking.html', {'form': form, 'booking': booking})
+
+@login_required
+@transaction.atomic
 def approve_payment_proof(request, proof_id):
     if request.user.role != 'provider':
         messages.error(request, 'You are not authorized to perform this action.')
         return redirect('index')
     payment_proof = get_object_or_404(PaymentProof, id=proof_id, booking__service__manager=request.user)
-    if request.method == 'POST' and payment_proof.status == 'pending' and payment_proof.booking.status == 'confirmed':
+    if request.method == 'POST' and payment_proof.status == 'pending' and payment_proof.booking.status == 'awaiting_payment':
         payment_proof.status = 'approved'
+        payment_proof.booking.status = 'completed'
         payment_proof.save()
+        payment_proof.booking.save()
         provider = request.user
-        service_price = payment_proof.booking.service.price
+        service_price = payment_proof.booking.completion_price or payment_proof.booking.service.price
         provider.wallet_balance += service_price
         provider.save()
         messages.success(request, f'Payment proof for booking {payment_proof.booking.id} approved. Rs. {service_price} added to your wallet.')
@@ -229,7 +252,7 @@ def reject_payment_proof(request, proof_id):
         messages.error(request, 'You are not authorized to perform this action.')
         return redirect('index')
     payment_proof = get_object_or_404(PaymentProof, id=proof_id, booking__service__manager=request.user)
-    if request.method == 'POST' and payment_proof.status == 'pending' and payment_proof.booking.status == 'confirmed':
+    if request.method == 'POST' and payment_proof.status == 'pending' and payment_proof.booking.status == 'awaiting_payment':
         payment_proof.status = 'rejected'
         payment_proof.save()
         messages.error(request, f'Payment proof for booking {payment_proof.booking.id} rejected.')

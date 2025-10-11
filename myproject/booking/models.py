@@ -20,17 +20,16 @@ class ServiceType(models.Model):
     def __str__(self):
         return self.name
 
-
 class Service(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE, related_name='services')
     image = models.ImageField(upload_to='services/', blank=True, null=True)
     manager = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='services')
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0)
 
     def __str__(self):
         return self.title
-
 
 class Booking(models.Model):
     STATUS_CHOICES = (
@@ -38,12 +37,14 @@ class Booking(models.Model):
         ('confirmed', 'Confirmed'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
+        ('awaiting_payment', 'Awaiting Payment'),
     )
     customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='bookings')
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    completion_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)])
 
     def __str__(self):
         return f"{self.service.title} - {self.customer.username}"

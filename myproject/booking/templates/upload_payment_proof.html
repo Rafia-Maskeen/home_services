@@ -109,14 +109,14 @@
                     <td class="p-2 sm:p-3">{{ proof.booking.id }}</td>
                     <td class="p-2 sm:p-3">{{ proof.booking.customer.username }}</td>
                     <td class="p-2 sm:p-3">{{ proof.booking.service.title }}</td>
-                    <td class="p-2 sm:p-3">Rs. {{ proof.booking.service.price|floatformat:2 }}</td>
+                    <td class="p-2 sm:p-3">Rs. {{ proof.booking.completion_price|floatformat:2|default:proof.booking.service.price|floatformat:2 }}</td>
                     <td class="p-2 sm:p-3">{{ proof.upload_date|date:"Y-m-d H:i" }}</td>
                     <td class="p-2 sm:p-3">
                       <a href="{{ proof.file.url }}" target="_blank" class="text-[#FF6B00] hover:underline text-xs sm:text-sm">View File</a>
                     </td>
                     <td class="p-2 sm:p-3">{{ proof.get_status_display }}</td>
                     <td class="p-2 sm:p-3">
-                      {% if proof.status == 'pending' and proof.booking.status == 'confirmed' %}
+                      {% if proof.status == 'pending' and proof.booking.status == 'awaiting_payment' %}
                         <form action="{% url 'approve_payment_proof' proof.id %}" method="post" class="inline-block mr-1 sm:mr-2">
                           {% csrf_token %}
                           <button type="submit" class="px-2 sm:px-4 py-1 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs sm:text-sm">Accept</button>

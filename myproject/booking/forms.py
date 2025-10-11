@@ -90,13 +90,13 @@ class PaymentProofForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if user:
-            self.fields['booking'].queryset = Booking.objects.filter(customer=user)
+            self.fields['booking'].queryset = Booking.objects.filter(customer=user, status='awaiting_payment')
 
 # -------------------- Service Form --------------------
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['title', 'description', 'service_type', 'image']  # price removed
+        fields = ['title', 'description', 'service_type', 'image', 'price']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full p-3 rounded-xl border border-gray-300',
@@ -113,9 +113,29 @@ class ServiceForm(forms.ModelForm):
             'image': forms.FileInput(attrs={
                 'class': 'w-full p-3 rounded-xl border border-gray-300'
             }),
+            'price': forms.NumberInput(attrs={
+                'class': 'w-full p-3 rounded-xl border border-gray-300',
+                'placeholder': 'Service price',
+                'min': 0,
+                'step': 0.01
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from .models import ServiceType
         self.fields['service_type'].queryset = ServiceType.objects.all()
+
+# -------------------- Complete Service Form --------------------
+class CompleteServiceForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = ['completion_price']
+        widgets = {
+            'completion_price': forms.NumberInput(attrs={
+                'class': 'w-full p-3 rounded-xl border border-gray-300',
+                'placeholder': 'Enter completion price',
+                'min': 0,
+                'step': 0.01
+            }),
+        }

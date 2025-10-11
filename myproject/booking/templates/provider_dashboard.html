@@ -35,6 +35,7 @@
                 <th class="p-2 sm:p-3">Date</th>
                 <th class="p-2 sm:p-3">Time</th>
                 <th class="p-2 sm:p-3">Status</th>
+                <th class="p-2 sm:p-3">Price</th>
                 <th class="p-2 sm:p-3">Actions</th>
               </tr>
             </thead>
@@ -46,6 +47,7 @@
                   <td class="p-2 sm:p-3">{{ booking.date }}</td>
                   <td class="p-2 sm:p-3">{{ booking.time }}</td>
                   <td class="p-2 sm:p-3">{{ booking.get_status_display }}</td>
+                  <td class="p-2 sm:p-3">{% if booking.completion_price %}Rs. {{ booking.completion_price|floatformat:2 }}{% else %}-{% endif %}</td>
                   <td class="p-2 sm:p-3">
                     {% if booking.status == 'pending' %}
                       <form action="{% url 'accept_booking' booking.id %}" method="post" class="inline-block mr-1 sm:mr-2">
@@ -55,6 +57,10 @@
                       <form action="{% url 'deny_booking' booking.id %}" method="post" class="inline-block">
                         {% csrf_token %}
                         <button type="submit" class="px-2 sm:px-4 py-1 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs sm:text-sm">Deny</button>
+                      </form>
+                    {% elif booking.status == 'confirmed' %}
+                      <form action="{% url 'complete_booking' booking.id %}" method="get" class="inline-block">
+                        <button type="submit" class="px-2 sm:px-4 py-1 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-xs sm:text-sm">Mark as Completed</button>
                       </form>
                     {% else %}
                       <span class="text-gray-500 text-xs sm:text-sm">No actions available</span>
@@ -136,6 +142,10 @@
           {{ form.service_type }}
         </div>
         <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Price</label>
+          {{ form.price }}
+        </div>
+        <div>
           <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Image (Optional)</label>
           {{ form.image }}
         </div>
@@ -151,8 +161,6 @@
     </div>
   </div>
 </section>
-
-{% endblock %}
 
 {% block extra_scripts %}
 <script>
@@ -186,4 +194,5 @@
     });
   });
 </script>
+{% endblock %}
 {% endblock %}
