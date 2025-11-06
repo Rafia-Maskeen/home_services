@@ -21,7 +21,7 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('title', 'manager', 'service_type', 'price')
+    list_display = ('title', 'manager', 'service_type')
     search_fields = ('title', 'description', 'manager__username')
     list_filter = ('service_type',)
 

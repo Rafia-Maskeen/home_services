@@ -96,7 +96,7 @@ class PaymentProofForm(forms.ModelForm):
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['title', 'description', 'service_type', 'image', 'price']
+        fields = ['title', 'description', 'service_type', 'image']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full p-3 rounded-xl border border-gray-300',
@@ -112,12 +112,6 @@ class ServiceForm(forms.ModelForm):
             }),
             'image': forms.FileInput(attrs={
                 'class': 'w-full p-3 rounded-xl border border-gray-300'
-            }),
-            'price': forms.NumberInput(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300',
-                'placeholder': 'Service price',
-                'min': 0,
-                'step': 0.01
             }),
         }
 
