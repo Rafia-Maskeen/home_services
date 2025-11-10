@@ -1,143 +1,211 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block content %}
-<section class="min-h-screen bg-gradient-to-br from-[#FFEFBA] to-[#FFFFFF] py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
+{% extends 'base.html' %} {% load static %} {% block content %}
+<section
+  class="min-h-screen bg-gradient-to-br from-[#FFEFBA] to-[#FFFFFF] py-12 sm:py-16 px-4 sm:px-6 lg:px-8"
+>
   <div class="container mx-auto max-w-4xl">
     <!-- Messages -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="mb-3 sm:mb-4 p-3 sm:p-4 {% if message.tags == 'error' %}bg-red-500{% else %}bg-green-500{% endif %} text-white rounded-lg sm:rounded-xl font-semibold text-center text-sm sm:text-base">
-          {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+    {% if messages %} {% for message in messages %}
+    <div
+      class="mb-3 sm:mb-4 p-3 sm:p-4 {% if message.tags == 'error' %}bg-red-500{% else %}bg-green-500{% endif %} text-white rounded-lg sm:rounded-xl font-semibold text-center text-sm sm:text-base"
+    >
+      {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+    </div>
+    {% endfor %} {% endif %} {% if request.user.role == 'customer' %}
+    <!-- Customer: Upload Payment Proof -->
+    <div
+      class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8 mb-6 sm:mb-8"
+    >
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
+        Upload Payment Proof
+      </h2>
+      <form
+        method="post"
+        enctype="multipart/form-data"
+        class="space-y-4 sm:space-y-6"
+      >
+        {% csrf_token %} {% if form.errors %}
+        <div class="text-red-600 text-xs sm:text-sm mb-3 sm:mb-4">
+          <ul>
+            {% for field in form %} {% for error in field.errors %}
+            <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %} {% endfor %}
+          </ul>
         </div>
-      {% endfor %}
-    {% endif %}
-
-    {% if request.user.role == 'customer' %}
-      <!-- Customer: Upload Payment Proof -->
-      <div class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8 mb-6 sm:mb-8">
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Upload Payment Proof</h2>
-        <form method="post" enctype="multipart/form-data" class="space-y-4 sm:space-y-6">
-          {% csrf_token %}
-          {% if form.errors %}
-            <div class="text-red-600 text-xs sm:text-sm mb-3 sm:mb-4">
-              <ul>
-                {% for field in form %}
-                  {% for error in field.errors %}
-                    <li>{{ field.label }}: {{ error }}</li>
-                  {% endfor %}
-                {% endfor %}
-              </ul>
-            </div>
-          {% endif %}
-          <div>
-            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Select Booking</label>
-            {{ form.booking }}
-          </div>
-          <div>
-            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Upload File (Image or PDF)</label>
-            {{ form.file }}
-          </div>
-          <button type="submit" class="w-full py-2 sm:py-3 bg-[#FF6B00] text-white font-semibold rounded-lg sm:rounded-xl hover:bg-[#e85d00] transition duration-300 text-sm sm:text-base">
-            Upload Payment Proof
-          </button>
-        </form>
-      </div>
-
-      <!-- Customer: Previous Payment Proofs -->
-      <div class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8">
-        <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Your Uploaded Payment Proofs</h3>
-        {% if payment_proofs %}
-          <div class="overflow-x-auto">
-            <table class="w-full text-left min-w-[40rem]">
-              <thead>
-                <tr class="bg-gray-100">
-                  <th class="p-2 sm:p-3">Booking</th>
-                  <th class="p-2 sm:p-3">Service</th>
-                  <th class="p-2 sm:p-3">Upload Date</th>
-                  <th class="p-2 sm:p-3">File</th>
-                  <th class="p-2 sm:p-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for proof in payment_proofs %}
-                  <tr class="border-t">
-                    <td class="p-2 sm:p-3">{{ proof.booking.id }}</td>
-                    <td class="p-2 sm:p-3">{{ proof.booking.service.title }}</td>
-                    <td class="p-2 sm:p-3">{{ proof.upload_date|date:"Y-m-d H:i" }}</td>
-                    <td class="p-2 sm:p-3">
-                      <a href="{{ proof.file.url }}" target="_blank" class="text-[#FF6B00] hover:underline text-xs sm:text-sm">View File</a>
-                    </td>
-                    <td class="p-2 sm:p-3">{{ proof.get_status_display }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="text-gray-600 text-center text-sm sm:text-base">No payment proofs uploaded yet.</p>
         {% endif %}
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
+            >Select Booking</label
+          >
+          {{ form.booking }}
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
+            >Upload File (Image or PDF)</label
+          >
+          {{ form.file }}
+        </div>
+        <button
+          type="submit"
+          class="w-full py-2 sm:py-3 bg-[#FF6B00] text-white font-semibold rounded-lg sm:rounded-xl hover:bg-[#e85d00] transition duration-300 text-sm sm:text-base"
+        >
+          Upload Payment Proof
+        </button>
+      </form>
+    </div>
+
+    <!-- Customer: Previous Payment Proofs -->
+    <div
+      class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8"
+    >
+      <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
+        Your Uploaded Payment Proofs
+      </h3>
+      {% if payment_proofs %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[40rem]">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="p-2 sm:p-3">Booking</th>
+              <th class="p-2 sm:p-3">Service</th>
+              <th class="p-2 sm:p-3">Upload Date</th>
+              <th class="p-2 sm:p-3">File</th>
+              <th class="p-2 sm:p-3">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for proof in payment_proofs %}
+            <tr class="border-t">
+              <td class="p-2 sm:p-3">{{ proof.booking.id }}</td>
+              <td class="p-2 sm:p-3">{{ proof.booking.service.title }}</td>
+              <td class="p-2 sm:p-3">
+                {{ proof.upload_date|date:"Y-m-d H:i" }}
+              </td>
+              <td class="p-2 sm:p-3">
+                <a
+                  href="{{ proof.file.url }}"
+                  target="_blank"
+                  class="text-[#FF6B00] hover:underline text-xs sm:text-sm"
+                  >View File</a
+                >
+              </td>
+              <td class="p-2 sm:p-3">{{ proof.get_status_display }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
+      {% else %}
+      <p class="text-gray-600 text-center text-sm sm:text-base">
+        No payment proofs uploaded yet.
+      </p>
+      {% endif %}
+    </div>
 
     {% else %}
-      <!-- Provider: Wallet View -->
-      <div class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8 mb-6 sm:mb-8">
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Your Wallet</h2>
-        <div class="mb-4 sm:mb-6">
-          <p class="text-lg sm:text-xl font-semibold text-[#FF6B00]">Total Earnings: Rs. {{ total_earnings|floatformat:2 }}</p>
-          <p class="text-sm sm:text-base text-gray-600">Based on approved payment proofs for your services.</p>
-        </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Payment Proofs</h3>
-        {% if payment_proofs %}
-          <div class="overflow-x-auto">
-            <table class="w-full text-left min-w-[50rem]">
-              <thead>
-                <tr class="bg-gray-100">
-                  <th class="p-2 sm:p-3">Booking ID</th>
-                  <th class="p-2 sm:p-3">Customer</th>
-                  <th class="p-2 sm:p-3">Service</th>
-                  <th class="p-2 sm:p-3">Amount</th>
-                  <th class="p-2 sm:p-3">Upload Date</th>
-                  <th class="p-2 sm:p-3">File</th>
-                  <th class="p-2 sm:p-3">Status</th>
-                  <th class="p-2 sm:p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for proof in payment_proofs %}
-                  <tr class="border-t">
-                    <td class="p-2 sm:p-3">{{ proof.booking.id }}</td>
-                    <td class="p-2 sm:p-3">{{ proof.booking.customer.username }}</td>
-                    <td class="p-2 sm:p-3">{{ proof.booking.service.title }}</td>
-                    <td class="p-2 sm:p-3">Rs. {{ proof.booking.completion_price|floatformat:2|default:proof.booking.service.price|floatformat:2 }}</td>
-                    <td class="p-2 sm:p-3">{{ proof.upload_date|date:"Y-m-d H:i" }}</td>
-                    <td class="p-2 sm:p-3">
-                      <a href="{{ proof.file.url }}" target="_blank" class="text-[#FF6B00] hover:underline text-xs sm:text-sm">View File</a>
-                    </td>
-                    <td class="p-2 sm:p-3">{{ proof.get_status_display }}</td>
-                    <td class="p-2 sm:p-3">
-                      {% if proof.status == 'pending' and proof.booking.status == 'awaiting_payment' %}
-                        <form action="{% url 'approve_payment_proof' proof.id %}" method="post" class="inline-block mr-1 sm:mr-2">
-                          {% csrf_token %}
-                          <button type="submit" class="px-2 sm:px-4 py-1 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs sm:text-sm">Accept</button>
-                        </form>
-                        <form action="{% url 'reject_payment_proof' proof.id %}" method="post" class="inline-block">
-                          {% csrf_token %}
-                          <button type="submit" class="px-2 sm:px-4 py-1 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs sm:text-sm">Deny</button>
-                        </form>
-                      {% else %}
-                        <span class="text-gray-500 text-xs sm:text-sm">No actions available</span>
-                      {% endif %}
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="text-gray-600 text-center text-sm sm:text-base">No payment proofs available.</p>
-        {% endif %}
+    <!-- Provider: Wallet View -->
+    <div
+      class="bg-white rounded-xl sm:rounded-3xl shadow-lg sm:shadow-2xl p-4 sm:p-8 mb-6 sm:mb-8"
+    >
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
+        Your Wallet
+      </h2>
+      <div class="mb-4 sm:mb-6">
+        <p class="text-lg sm:text-xl font-semibold text-[#FF6B00]">
+          Total Earnings: Rs. {{ total_earnings|floatformat:2 }}
+        </p>
+        <p class="text-sm sm:text-base text-gray-600">
+          Based on approved payment proofs for your services.
+        </p>
       </div>
+      <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">
+        Payment Proofs
+      </h3>
+      {% if payment_proofs %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[50rem]">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="p-2 sm:p-3">Booking ID</th>
+              <th class="p-2 sm:p-3">Customer</th>
+              <th class="p-2 sm:p-3">Service</th>
+              <th class="p-2 sm:p-3">Amount</th>
+              <th class="p-2 sm:p-3">Upload Date</th>
+              <th class="p-2 sm:p-3">File</th>
+              <th class="p-2 sm:p-3">Status</th>
+              <th class="p-2 sm:p-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for proof in payment_proofs %}
+            <tr class="border-t">
+              <td class="p-2 sm:p-3">{{ proof.booking.id }}</td>
+              <td class="p-2 sm:p-3">{{ proof.booking.customer.username }}</td>
+              <td class="p-2 sm:p-3">{{ proof.booking.service.title }}</td>
+              <td class="p-2 sm:p-3">
+                {% if proof.booking.completion_price %} Rs. {{
+                proof.booking.completion_price|floatformat:2 }} {% else %}
+                <span class="text-gray-500 italic">Not set</span>
+                {% endif %}
+              </td>
+
+              <td class="p-2 sm:p-3">
+                {{ proof.upload_date|date:"Y-m-d H:i" }}
+              </td>
+              <td class="p-2 sm:p-3">
+                <a
+                  href="{{ proof.file.url }}"
+                  target="_blank"
+                  class="text-[#FF6B00] hover:underline text-xs sm:text-sm"
+                >
+                  View File
+                </a>
+              </td>
+              <td class="p-2 sm:p-3">{{ proof.get_status_display }}</td>
+              <td class="p-2 sm:p-3">
+                {% if proof.status == 'pending' and proof.booking.status == 'awaiting_payment' %}
+                <form
+                  action="{% url 'approve_payment_proof' proof.id %}"
+                  method="post"
+                  class="inline-block mr-1 sm:mr-2"
+                >
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="px-2 sm:px-4 py-1 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs sm:text-sm"
+                  >
+                    Accept
+                  </button>
+                </form>
+                <form
+                  action="{% url 'reject_payment_proof' proof.id %}"
+                  method="post"
+                  class="inline-block"
+                >
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="px-2 sm:px-4 py-1 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs sm:text-sm"
+                  >
+                    Deny
+                  </button>
+                </form>
+                {% else %}
+                <span class="text-gray-500 text-xs sm:text-sm"
+                  >No actions available</span
+                >
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-gray-600 text-center text-sm sm:text-base">
+        No payment proofs available.
+      </p>
+      {% endif %}
+    </div>
     {% endif %}
   </div>
 </section>
