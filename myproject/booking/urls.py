@@ -26,6 +26,9 @@ urlpatterns = [
     path('complete-booking/<int:booking_id>/', views.complete_booking, name='complete_booking'),
     path('approve-payment-proof/<int:proof_id>/', views.approve_payment_proof, name='approve_payment_proof'),
     path('reject-payment-proof/<int:proof_id>/', views.reject_payment_proof, name='reject_payment_proof'),
+    path("api/customer/polling/", views.customer_polling, name="customer_polling"),
+    path("api/provider/polling/", views.provider_polling, name="provider_polling"),
+
 ]
     
 

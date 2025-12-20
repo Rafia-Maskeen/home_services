@@ -142,8 +142,7 @@
               <td class="p-2 sm:p-3">{{ proof.booking.customer.username }}</td>
               <td class="p-2 sm:p-3">{{ proof.booking.service.title }}</td>
               <td class="p-2 sm:p-3">
-                {% if proof.booking.completion_price %} Rs. {{
-                proof.booking.completion_price|floatformat:2 }} {% else %}
+                {% if proof.booking.completion_price %} Rs. {{proof.booking.completion_price|floatformat:2 }} {% else %}
                 <span class="text-gray-500 italic">Not set</span>
                 {% endif %}
               </td>

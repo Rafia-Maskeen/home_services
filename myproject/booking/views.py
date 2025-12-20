@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import Service, Booking, Review, PaymentProof
 from .forms import BookingForm, ReviewForm, RegisterForm, LoginForm, PaymentProofForm, ServiceForm, CompleteServiceForm
 
@@ -25,13 +26,40 @@ def services(request):
 
 def service_detail(request, service_id):
     service = get_object_or_404(Service, id=service_id)
+
+    # All reviews for this service
     bookings = Booking.objects.filter(service=service)
     reviews = Review.objects.filter(booking__in=bookings)
+
+    booking = None
+    payment_approved = False
+
+    # 🔹 Check booking for logged-in customer
+    if request.user.is_authenticated and request.user.role == 'customer':
+        booking = Booking.objects.filter(
+            service=service,
+            customer=request.user
+        ).first()
+
+        if booking:
+            payment_approved = PaymentProof.objects.filter(
+                booking=booking,
+                status='approved'
+            ).exists()
+
+    # 🔹 Booking form only if not booked
+    form = BookingForm() if not booking else None
+
     context = {
         'service': service,
-        'reviews': reviews
+        'reviews': reviews,
+        'booking': booking,
+        'form': form,
+        'payment_approved': payment_approved,
     }
+
     return render(request, 'services_detail.html', context)
+
 
 @login_required
 def booking(request, booking_id):
@@ -259,3 +287,50 @@ def reject_payment_proof(request, proof_id):
     else:
         messages.error(request, 'This payment proof cannot be rejected.')
     return redirect('upload_payment_proof')
+
+@login_required
+def customer_polling(request):
+    if request.user.role != 'customer':
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    bookings = Booking.objects.filter(customer=request.user).order_by('-date')
+
+    data = []
+    for booking in bookings:
+        payment_status = None
+        proof = PaymentProof.objects.filter(booking=booking).first()
+        if proof:
+            payment_status = proof.status
+
+        data.append({
+            "booking_id": booking.id,
+            "service": booking.service.title,
+            "booking_status": booking.status,
+            "payment_status": payment_status,
+        })
+
+    return JsonResponse({"bookings": data})
+
+@login_required
+def provider_polling(request):
+    if request.user.role != 'provider':
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    bookings = Booking.objects.filter(
+        service__manager=request.user
+    ).order_by('-date')
+
+    data = []
+    for booking in bookings:
+        proof = PaymentProof.objects.filter(booking=booking).first()
+        payment_status = proof.status if proof else None
+
+        data.append({
+            "booking_id": booking.id,
+            "customer": booking.customer.username,
+            "service": booking.service.title,
+            "booking_status": booking.status,
+            "payment_status": payment_status,
+        })
+
+    return JsonResponse({"bookings": data})

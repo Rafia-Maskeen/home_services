@@ -14,14 +14,12 @@
     <p class="text-gray-700 text-lg mb-6">Your service has been successfully booked. We appreciate your trust in us.</p>
 
     <!-- ✅ Add Review or Show Submitted -->
-    {% if not booking.review %}
-      <a href="{% url 'submit_review' booking.id %}"
+
+      <a href="/"
          class="inline-block bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#e55a00] transition-all duration-300 shadow-md animate-pulse">
-        Add Your Review
+        OK
       </a>
-    {% else %}
-      <p class="text-green-600 font-semibold animate-fade-in">You have already submitted a review.</p>
-    {% endif %}
+   
   </div>
 </section>
 
