@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="max-w-6xl mx-auto py-12">
+  <h2 class="text-3xl font-bold mb-6 text-[#FF6B00]">Payment Approvals</h2>
+
+  {% if proofs %}
+  <table class="w-full bg-white shadow rounded-xl">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="p-3">Customer</th>
+        <th class="p-3">Service</th>
+        <th class="p-3">Amount</th>
+        <th class="p-3">Proof</th>
+        <th class="p-3">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for proof in proofs %}
+      <tr class="border-t">
+        <td class="p-3">{{ proof.booking.customer.username }}</td>
+        <td class="p-3">{{ proof.booking.provider_service.service.title }}</td>
+        <td class="p-3">Rs. {{ proof.booking.final_price }}</td>
+        <td class="p-3">
+          <a href="{{ proof.file.url }}" target="_blank"
+             class="text-blue-600 underline">
+            View Proof
+          </a>
+        </td>
+        <td class="p-3">
+          <form method="post" action="{% url 'approve_payment' proof.id %}">
+            {% csrf_token %}
+            <button class="px-4 py-2 bg-green-600 text-white rounded">
+              Approve
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="text-gray-600">No pending payments.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

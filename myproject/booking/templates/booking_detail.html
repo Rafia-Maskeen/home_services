@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="min-h-screen bg-gradient-to-br from-[#FFEFBA] to-white py-14 px-6">
+  <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-8" data-aos="fade-up">
+
+    <h2 class="text-3xl font-bold text-[#FF6B00] mb-6 text-center">
+      Booking Details
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <!-- LEFT -->
+      <div>
+        <h4 class="font-semibold text-gray-700 mb-1">Service</h4>
+        <p class="text-lg font-bold">
+          {{ booking.provider_service.service.title }}
+        </p>
+
+        <h4 class="font-semibold text-gray-700 mt-4 mb-1">Provider</h4>
+        <a href="{% url 'provider_profile' booking.provider_service.provider.id %}"
+           class="text-[#FF6B00] hover:underline font-semibold">
+          {{ booking.provider_service.provider.username }}
+        </a>
+
+        <h4 class="font-semibold text-gray-700 mt-4 mb-1">City</h4>
+        <p>{{ booking.provider_service.city.name }}</p>
+
+        <h4 class="font-semibold text-gray-700 mt-4 mb-1">Date & Time</h4>
+        <p>{{ booking.date }} at {{ booking.time }}</p>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <h4 class="font-semibold text-gray-700 mb-1">Status</h4>
+        <span class="inline-block px-4 py-2 rounded-full text-white text-sm
+          {% if booking.status == 'completed' %}bg-green-500
+          {% elif booking.status == 'confirmed' %}bg-blue-500
+          {% elif booking.status == 'awaiting_payment' %}bg-orange-500
+          {% else %}bg-gray-400{% endif %}">
+          {{ booking.get_status_display }}
+        </span>
+
+        <h4 class="font-semibold text-gray-700 mt-4 mb-1">Price</h4>
+        <p class="text-lg font-bold">
+          Rs. {{ booking.final_price|floatformat:2 }}
+        </p>
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="mt-8 border-t pt-6">
+      <h3 class="font-bold text-gray-800 mb-3">Payment Proof</h3>
+
+      {% if booking.payment_proofs.exists %}
+        {% for proof in booking.payment_proofs.all %}
+          <a href="{{ proof.file.url }}"
+             target="_blank"
+             class="block text-[#FF6B00] underline mb-2">
+            View Payment Proof ({{ proof.get_status_display }})
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="text-gray-500">No payment proof uploaded yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- REVIEW -->
+    {% if booking.status == 'completed' and not booking.review %}
+      <div class="text-center mt-8">
+        <a href="{% url 'submit_review' booking.id %}"
+           class="px-6 py-3 bg-[#FF6B00] text-white rounded-lg shadow hover:bg-[#e85d00]">
+          Submit Review
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

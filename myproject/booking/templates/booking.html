@@ -1,4 +1,7 @@
-{% extends 'base.html' %} {% load static %} {% block content %}
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
 <!-- AOS CSS -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 
@@ -10,79 +13,83 @@
     data-aos="fade-up"
     data-aos-duration="1000"
   >
-    <!-- Left Column: Service Info -->
+
+    <!-- LEFT COLUMN -->
     <div class="space-y-6" data-aos="fade-right" data-aos-delay="200">
-      <img
-        src="{{ service.image.url }}"
-        alt="{{ service.name }}"
-        class="w-full h-72 object-cover rounded-2xl shadow-md"
-      />
-      <h2 class="text-3xl font-extrabold text-gray-800">{{ service.name }}</h2>
+
+      {% if provider_service.service.image %}
+        <img
+          src="{{ provider_service.service.image.url }}"
+          alt="{{ provider_service.service.title }}"
+          class="w-full h-72 object-cover rounded-2xl shadow-md"
+        />
+      {% endif %}
+
+      <h2 class="text-3xl font-extrabold text-gray-800">
+        {{ provider_service.service.title }}
+      </h2>
+
       <p class="text-gray-600 text-lg leading-relaxed">
-        {{ service.description }}
+        {{ provider_service.service.description }}
       </p>
 
-      <!-- Booking Status -->
-      {% if booking %}
-      <div class="mt-4">
-        <p class="text-sm font-medium text-gray-500">Booking Status:</p>
-        <p
-          class="text-lg font-semibold {% if booking.status == 'completed' %}text-green-600{% else %}text-orange-500{% endif %}"
-        >
-          {{ booking.get_status_display }}
-        </p>
-      </div>
-      {% endif %}
+      <!-- SERVICE META -->
+      <div class="bg-gray-50 rounded-xl p-5 space-y-3 shadow-sm">
 
-      <!-- Mark as Completed Button -->
-      {% if booking and booking.status != 'completed' %}
-      <a
-        href="{% url 'mark_completed' booking.id %}"
-        class="inline-block mt-3 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow"
-      >
-        Mark as Completed
-      </a>
-      {% endif %}
+        <div>
+          <p class="text-sm font-medium text-gray-500">Provider</p>
+          <p class="text-lg font-semibold text-gray-800">
+            {{ provider_service.provider.username }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-sm font-medium text-gray-500">City</p>
+          <p class="text-lg font-semibold text-gray-800">
+            {{ provider_service.city.name }}
+          </p>
+        </div>
+
+
+      </div>
     </div>
 
-    <!-- Right Column: Booking Form or Review Form -->
+    <!-- RIGHT COLUMN -->
     <div class="space-y-6" data-aos="fade-left" data-aos-delay="300">
-      {% if booking %}
-      <!-- ✅ THANK YOU -->
-      <div
-        class="bg-green-50 border border-green-200 rounded-xl p-6 text-center"
-      >
-        <h2 class="text-2xl font-bold text-green-600 mb-2">Thank You!</h2>
-        <p class="text-gray-700">Your service has been successfully booked.</p>
-      </div>
 
-      <!-- ✅ REVIEW AFTER PAYMENT -->
-      {% if payment_approved %}
-      <a
-        href="{% url 'submit_review' booking.id %}"
-        class="block text-center bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#e55a00] transition-all shadow-md mt-4"
-      >
-        Add Your Review
-      </a>
-      {% else %}
-      <p class="text-gray-500 text-sm text-center mt-3">
-        You can leave a review after payment approval.
-      </p>
-      {% endif %} {% else %}
-      <!-- 🟠 BOOKING FORM -->
       <h2 class="text-2xl font-bold text-gray-800 border-b pb-2">
         Book This Service
       </h2>
+
       <form method="POST" class="space-y-5">
-        {% csrf_token %} {{ form.as_p }}
+        {% csrf_token %}
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">
+            Select Date
+          </label>
+          {{ form.date }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">
+            Select Time
+          </label>
+          {{ form.time }}
+        </div>
+
         <button
           type="submit"
-          class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold"
+          class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold transition-all shadow-md"
         >
           Confirm Booking
         </button>
       </form>
-      {% endif %}
+
+      <p class="text-gray-500 text-sm text-center mt-3">
+        You will upload payment proof after the service is completed.
+      </p>
+
     </div>
   </div>
 </section>
@@ -90,6 +97,11 @@
 <!-- AOS Script -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-  AOS.init();
+  AOS.init({
+    once: true,
+    duration: 800,
+    easing: 'ease-in-out',
+  });
 </script>
+
 {% endblock %}

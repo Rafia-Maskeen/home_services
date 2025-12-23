@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from .models import Booking, Review, PaymentProof, CustomUser, Service
+from .models import Booking, Review, PaymentProof, CustomUser, Service,ProviderService, City
+
 
 # -------------------- Register Form --------------------
 class RegisterForm(UserCreationForm):
@@ -34,14 +35,12 @@ class BookingForm(forms.ModelForm):
         widget=forms.DateInput(attrs={
             'type': 'date',
             'class': 'w-full p-3 rounded-xl border border-gray-300',
-            'placeholder': 'Select a date'
         })
     )
     time = forms.TimeField(
         widget=forms.TimeInput(attrs={
             'type': 'time',
             'class': 'w-full p-3 rounded-xl border border-gray-300',
-            'placeholder': 'Select a time'
         })
     )
 
@@ -72,8 +71,10 @@ class ReviewForm(forms.ModelForm):
 class PaymentProofForm(forms.ModelForm):
     booking = forms.ModelChoiceField(
         queryset=Booking.objects.none(),
-        required=True,
-        empty_label="Select a booking"
+        empty_label="Select a booking",
+        widget=forms.Select(attrs={
+            'class': 'w-full p-3 rounded-xl border border-gray-300',
+        })
     )
 
     class Meta:
@@ -89,47 +90,41 @@ class PaymentProofForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        if user:
-            self.fields['booking'].queryset = Booking.objects.filter(customer=user, status='awaiting_payment')
 
+        if user:
+            self.fields['booking'].queryset = (
+                Booking.objects
+                .filter(customer=user, status='awaiting_payment')
+                .select_related(
+                    'provider_service',
+                    'provider_service__provider',
+                    'provider_service__service'
+                )
+            )
 # -------------------- Service Form --------------------
-class ServiceForm(forms.ModelForm):
+class ProviderServiceForm(forms.ModelForm):
     class Meta:
-        model = Service
-        fields = ['title', 'description', 'service_type', 'image']
+        model = ProviderService
+        fields = ['service', 'city']
         widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300',
-                'placeholder': 'Service title'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300',
-                'rows': 4,
-                'placeholder': 'Describe your service'
-            }),
-            'service_type': forms.Select(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300'
-            }),
-            'image': forms.FileInput(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300'
-            }),
+            'service': forms.Select(attrs={'class': 'w-full p-3 rounded-xl border'}),
+            'city': forms.Select(attrs={'class': 'w-full p-3 rounded-xl border'}),
+           
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        from .models import ServiceType
-        self.fields['service_type'].queryset = ServiceType.objects.all()
 
 # -------------------- Complete Service Form --------------------
+# forms.py
 class CompleteServiceForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['completion_price']
-        widgets = {
-            'completion_price': forms.NumberInput(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300',
-                'placeholder': 'Enter completion price',
-                'min': 0,
-                'step': 0.01
-            }),
-        }
+        fields = ['final_price']
+
+    final_price = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        min_value=1,
+        label="Final Service Price (Rs.)"
+    )
+
+

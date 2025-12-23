@@ -1,10 +1,16 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import get_user_model
-from .models import CustomUser, Service, Booking, Review, PaymentProof, ServiceType
+from .models import CustomUser, Service, Booking, Review, PaymentProof, ServiceType, City, ProviderService
 from django.db import transaction
 
 User = get_user_model()
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -21,50 +27,54 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('title', 'manager', 'service_type')
-    search_fields = ('title', 'description', 'manager__username')
+    list_display = ('id', 'title', 'service_type')
+    search_fields = ('title', 'description')
     list_filter = ('service_type',)
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(manager=request.user)
+    def has_module_permission(self, request):
+        return request.user.is_superuser
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        if not request.user.is_superuser:
-            if 'manager' in form.base_fields:
-                form.base_fields['manager'].initial = request.user
-                form.base_fields['manager'].disabled = True
-        return form
+    def has_add_permission(self, request):
+        return request.user.is_superuser
 
-    def save_model(self, request, obj, form, change):
-        if not request.user.is_superuser:
-            obj.manager = request.user
-        obj.save()
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'customer', 'service', 'date', 'time', 'status', 'completion_price')
-    list_filter = ('status', 'date', 'service')
-    search_fields = ('customer__username', 'service__title')
+    list_display = (
+        'id',
+        'customer',
+        'provider_service',
+        'date',
+        'time',
+        'status',
+        'final_price'
+    )
+    list_filter = ('status', 'date')
+    search_fields = (
+        'customer__username',
+        'provider_service__service__title',
+        'provider_service__provider__username'
+    )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(service__manager=request.user)
+        return qs.filter(provider_service__provider=request.user)
 
     def has_change_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
-        return obj is not None and obj.service.manager == request.user
+        return obj and obj.provider_service.provider == request.user
 
     def has_delete_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-        return obj is not None and obj.service.manager == request.user
+        return False
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
@@ -81,48 +91,54 @@ class ReviewAdmin(admin.ModelAdmin):
 @admin.register(PaymentProof)
 class PaymentProofAdmin(admin.ModelAdmin):
     list_display = ('booking', 'customer', 'status', 'upload_date')
-    list_filter = ('status', 'upload_date')
-    search_fields = ('booking__service__title', 'customer__username')
-    actions = ['approve_payment_proofs']
+    list_filter = ('status',)
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj and obj.status == 'approved':
-            return [f.name for f in self.model._meta.fields if f.name != 'status']
-        return []
+    actions = ['approve_payment']
 
-    @admin.action(description='Approve selected payment proofs')
-    def approve_payment_proofs(self, request, queryset):
+    @admin.action(description="Approve payment")
+    def approve_payment(self, request, queryset):
         with transaction.atomic():
-            for payment_proof in queryset:
-                if payment_proof.status != 'approved' and payment_proof.booking.status == 'awaiting_payment':
-                    payment_proof.status = 'approved'
-                    payment_proof.booking.status = 'completed'
-                    payment_proof.save()
-                    payment_proof.booking.save()
-                    provider = payment_proof.booking.service.manager
-                    service_price = payment_proof.booking.completion_price or payment_proof.booking.service.price
-                    provider.wallet_balance += service_price
-                    provider.save()
-                    self.message_user(
-                        request,
-                        f'The payment proof for booking {payment_proof.booking.id} was approved successfully and Rs. {service_price} added to {provider.username}\'s wallet.'
-                    )
+            for proof in queryset.select_related(
+                'booking__provider_service__provider'
+            ):
+                if proof.status != 'approved':
+                    booking = proof.booking
+                    provider = booking.provider_service.provider
+                    amount = booking.final_price
 
-    def save_model(self, request, obj, form, change):
-        if 'status' in form.changed_data and obj.status == 'approved' and obj.booking.status == 'awaiting_payment':
-            obj.booking.status = 'completed'
-            obj.booking.save()
-            provider = obj.booking.service.manager
-            service_price = obj.booking.completion_price or obj.booking.service.price
-            provider.wallet_balance += service_price
-            provider.save()
-            self.message_user(
-                request,
-                f'The payment proof for booking {obj.booking.id} was approved successfully and Rs. {service_price} added to {provider.username}\'s wallet.'
-            )
-        super().save_model(request, obj, form, change)
+                    proof.status = 'approved'
+                    booking.status = 'completed'
+                    provider.wallet_balance += amount
+
+                    proof.save()
+                    booking.save()
+                    provider.save()
 
 @admin.register(ServiceType)
 class ServiceTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     search_fields = ('name',)
+
+@admin.register(ProviderService)
+class ProviderServiceAdmin(admin.ModelAdmin):
+    list_display = ('provider', 'service', 'city', 'price', 'is_active')
+    list_filter = ('city', 'service', 'is_active')
+    search_fields = ('provider__username', 'service__title')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(provider=request.user)
+
+    def save_model(self, request, obj, form, change):
+        if not request.user.is_superuser:
+            obj.provider = request.user
+        super().save_model(request, obj, form, change)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            form.base_fields['provider'].disabled = True
+            form.base_fields['provider'].initial = request.user
+        return form

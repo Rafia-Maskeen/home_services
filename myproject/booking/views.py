@@ -3,13 +3,35 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.contrib import messages
+from django.db.models import Avg
 from django.http import JsonResponse
-from .models import Service, Booking, Review, PaymentProof
-from .forms import BookingForm, ReviewForm, RegisterForm, LoginForm, PaymentProofForm, ServiceForm, CompleteServiceForm
+from .models import (
+    Service,
+    ProviderService,
+    Booking,
+    Review,
+    PaymentProof,
+    City,
+    CustomUser
+)
+from .forms import (
+    BookingForm,
+    ReviewForm,
+    RegisterForm,
+    LoginForm,
+    PaymentProofForm,
+    ProviderServiceForm,
+    CompleteServiceForm,
+)
 
 def index(request):
-    top_services = Service.objects.all()
-    return render(request, 'index.html', {'top_services': top_services})
+    top_services = Service.objects.all()[:8]  # or any number you want
+    return render(request, 'index.html', {
+        'top_services': top_services
+    })
+
+
+
 
 def about(request):
     return render(request, 'about.html')
@@ -18,63 +40,62 @@ def contact(request):
     return render(request, 'contact.html')
 
 def services(request):
-    if request.user.is_authenticated and request.user.role == 'provider':
-        services = Service.objects.filter(manager=request.user)
-    else:
-        services = Service.objects.all()
-    return render(request, 'services.html', {'services': services})
+    services = Service.objects.all()
+    return render(request, 'services.html', {
+        'services': services
+    })
+
 
 def service_detail(request, service_id):
     service = get_object_or_404(Service, id=service_id)
 
-    # All reviews for this service
-    bookings = Booking.objects.filter(service=service)
-    reviews = Review.objects.filter(booking__in=bookings)
+    city_id = request.GET.get('city')
+    providers = ProviderService.objects.filter(
+        service=service,
+        is_active=True
+    )
 
-    booking = None
-    payment_approved = False
+    if city_id:
+        providers = providers.filter(city_id=city_id)
 
-    # 🔹 Check booking for logged-in customer
-    if request.user.is_authenticated and request.user.role == 'customer':
-        booking = Booking.objects.filter(
-            service=service,
-            customer=request.user
-        ).first()
+    cities = City.objects.all()
 
-        if booking:
-            payment_approved = PaymentProof.objects.filter(
-                booking=booking,
-                status='approved'
-            ).exists()
-
-    # 🔹 Booking form only if not booked
-    form = BookingForm() if not booking else None
-
-    context = {
+    return render(request, 'services_detail.html', {
         'service': service,
-        'reviews': reviews,
-        'booking': booking,
-        'form': form,
-        'payment_approved': payment_approved,
-    }
-
-    return render(request, 'services_detail.html', context)
-
+        'providers': providers,
+        'cities': cities,
+    })
 
 @login_required
-def booking(request, booking_id):
-    service = get_object_or_404(Service, id=booking_id)
+def create_booking(request, provider_service_id):
+    provider_service = get_object_or_404(
+        ProviderService,
+        id=provider_service_id,
+        is_active=True
+    )
+
+    if request.user.role != 'customer':
+        messages.error(request, 'Only customers can book services.')
+        return redirect('index')
+
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
-            booking.service = service
             booking.customer = request.user
+            booking.provider_service = provider_service
+            booking.status = 'pending'
             booking.save()
+
             return redirect('thank_you', booking_id=booking.id)
     else:
         form = BookingForm()
-    return render(request, 'booking.html', {'form': form, 'service': service})
+
+    return render(request, 'booking.html', {
+        'form': form,
+        'provider_service': provider_service
+    })
+
 
 @login_required
 def thank_you(request, booking_id):
@@ -139,27 +160,50 @@ def custom_logout_view(request):
 @login_required
 def provider_dashboard(request):
     if request.user.role != 'provider':
-        messages.error(request, 'You are not authorized to access the provider dashboard.')
         return redirect('index')
-    services = Service.objects.filter(manager=request.user)
-    bookings = Booking.objects.filter(service__manager=request.user).order_by('-date')
-    reviews = Review.objects.filter(booking__service__manager=request.user).order_by('-created_at')
+
+    offerings = ProviderService.objects.filter(provider=request.user)
+
+    bookings = (
+        Booking.objects
+        .filter(provider_service__provider=request.user)
+        .select_related(
+            'customer',
+            'provider_service__service',
+            'provider_service__city',
+        )
+        .order_by('-date')
+    )
+
+    # ✅ FETCH REVIEWS CORRECTLY
+    reviews = (
+        Review.objects
+        .filter(booking__provider_service__provider=request.user)
+        .select_related(
+            'booking__customer',
+            'booking__provider_service__service'
+        )
+        .order_by('-created_at')
+    )
+
     if request.method == 'POST':
-        form = ServiceForm(request.POST, request.FILES)
+        form = ProviderServiceForm(request.POST)
         if form.is_valid():
-            service = form.save(commit=False)
-            service.manager = request.user
-            service.save()
-            messages.success(request, 'Service added successfully!')
+            ps = form.save(commit=False)
+            ps.provider = request.user
+            ps.save()
+            messages.success(request, 'Service added successfully.')
             return redirect('provider_dashboard')
     else:
-        form = ServiceForm()
+        form = ProviderServiceForm()
+
     return render(request, 'provider_dashboard.html', {
-        'services': services,
+        'offerings': offerings,
         'bookings': bookings,
+        'reviews': reviews,   # ✅ THIS WAS MISSING
         'form': form,
-        'reviews': reviews
     })
+
 
 @login_required
 def customer_dashboard(request):
@@ -206,24 +250,32 @@ def upload_payment_proof(request, booking_id=None):
 
 @login_required
 def accept_booking(request, booking_id):
-    if request.user.role != 'provider':
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('index')
-    booking = get_object_or_404(Booking, id=booking_id, service__manager=request.user)
-    if request.method == 'POST' and booking.status == 'pending':
+    booking = get_object_or_404(
+        Booking,
+        id=booking_id,
+        provider_service__provider=request.user,
+        status='pending'
+    )
+
+    if request.method == 'POST':
         booking.status = 'confirmed'
         booking.save()
-        messages.success(request, f'Booking {booking.id} confirmed successfully.')
-    else:
-        messages.error(request, 'This booking cannot be confirmed.')
+        messages.success(request, "Booking confirmed.")
+
     return redirect('provider_dashboard')
+
 
 @login_required
 def deny_booking(request, booking_id):
     if request.user.role != 'provider':
         messages.error(request, 'You are not authorized to perform this action.')
         return redirect('index')
-    booking = get_object_or_404(Booking, id=booking_id, service__manager=request.user)
+    booking = get_object_or_404(
+    Booking,
+    id=booking_id,
+    provider_service__provider=request.user
+)
+
     if request.method == 'POST' and booking.status == 'pending':
         booking.status = 'cancelled'
         booking.save()
@@ -231,55 +283,71 @@ def deny_booking(request, booking_id):
     else:
         messages.error(request, 'This booking cannot be cancelled.')
     return redirect('provider_dashboard')
-
 @login_required
 @transaction.atomic
 def complete_booking(request, booking_id):
-    if request.user.role != 'provider':
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('index')
-    booking = get_object_or_404(Booking, id=booking_id, service__manager=request.user)
+    booking = get_object_or_404(
+        Booking,
+        id=booking_id,
+        provider_service__provider=request.user,
+        status='confirmed'
+    )
+
     if request.method == 'POST':
         form = CompleteServiceForm(request.POST, instance=booking)
-        if form.is_valid() and booking.status == 'confirmed':
+        if form.is_valid():
             booking = form.save(commit=False)
             booking.status = 'awaiting_payment'
             booking.save()
-            messages.success(request, f'Booking {booking.id} marked as completed. Awaiting payment proof.')
+
+            messages.success(request, "Service completed. Awaiting payment.")
             return redirect('provider_dashboard')
-        else:
-            messages.error(request, 'Invalid price or booking status.')
     else:
         form = CompleteServiceForm(instance=booking)
-    return render(request, 'complete_booking.html', {'form': form, 'booking': booking})
+
+    return render(request, 'complete_booking.html', {
+        'form': form,
+        'booking': booking
+    })
+
+
 
 @login_required
 @transaction.atomic
 def approve_payment_proof(request, proof_id):
-    if request.user.role != 'provider':
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('index')
-    payment_proof = get_object_or_404(PaymentProof, id=proof_id, booking__service__manager=request.user)
-    if request.method == 'POST' and payment_proof.status == 'pending' and payment_proof.booking.status == 'awaiting_payment':
-        payment_proof.status = 'approved'
-        payment_proof.booking.status = 'completed'
-        payment_proof.save()
-        payment_proof.booking.save()
-        provider = request.user
-        service_price = payment_proof.booking.completion_price or payment_proof.booking.service.price
-        provider.wallet_balance += service_price
-        provider.save()
-        messages.success(request, f'Payment proof for booking {payment_proof.booking.id} approved. Rs. {service_price} added to your wallet.')
-    else:
-        messages.error(request, 'This payment proof cannot be approved.')
-    return redirect('upload_payment_proof')
+    proof = get_object_or_404(
+        PaymentProof,
+        id=proof_id,
+        booking__provider_service__provider=request.user,
+        status='pending'
+    )
+
+    booking = proof.booking
+    provider = booking.provider_service.provider
+
+    proof.status = 'approved'
+    booking.status = 'completed'
+    provider.wallet_balance += booking.final_price
+
+    proof.save()
+    booking.save()
+    provider.save()
+
+    messages.success(request, "Payment approved successfully.")
+    return redirect('provider_payments')
+
 
 @login_required
 def reject_payment_proof(request, proof_id):
     if request.user.role != 'provider':
         messages.error(request, 'You are not authorized to perform this action.')
         return redirect('index')
-    payment_proof = get_object_or_404(PaymentProof, id=proof_id, booking__service__manager=request.user)
+    payment_proof = get_object_or_404(
+    PaymentProof,
+    id=proof_id,
+    booking__provider_service__provider=request.user
+)
+
     if request.method == 'POST' and payment_proof.status == 'pending' and payment_proof.booking.status == 'awaiting_payment':
         payment_proof.status = 'rejected'
         payment_proof.save()
@@ -293,44 +361,149 @@ def customer_polling(request):
     if request.user.role != 'customer':
         return JsonResponse({"error": "Unauthorized"}, status=403)
 
-    bookings = Booking.objects.filter(customer=request.user).order_by('-date')
+    bookings = (
+        Booking.objects
+        .filter(customer=request.user)
+        .select_related(
+            'provider_service__service',
+            'provider_service__provider',
+            'provider_service__city',
+        )
+        .order_by('-date')
+    )
 
     data = []
+
     for booking in bookings:
-        payment_status = None
         proof = PaymentProof.objects.filter(booking=booking).first()
-        if proof:
-            payment_status = proof.status
 
         data.append({
             "booking_id": booking.id,
-            "service": booking.service.title,
+            "service": booking.provider_service.service.title,
+            "provider": booking.provider_service.provider.username,
+            "city": booking.provider_service.city.name,
             "booking_status": booking.status,
-            "payment_status": payment_status,
+            "payment_status": proof.status if proof else None,
+            "price": str(booking.final_price),
+            "date": booking.date.strftime("%Y-%m-%d"),
+            "time": booking.time.strftime("%H:%M"),
         })
 
     return JsonResponse({"bookings": data})
+
 
 @login_required
 def provider_polling(request):
     if request.user.role != 'provider':
         return JsonResponse({"error": "Unauthorized"}, status=403)
 
-    bookings = Booking.objects.filter(
-        service__manager=request.user
-    ).order_by('-date')
+    bookings = (
+        Booking.objects
+        .filter(provider_service__provider=request.user)
+        .select_related(
+            'customer',
+            'provider_service__service',
+            'provider_service__city',
+        )
+        .order_by('-date')
+    )
 
     data = []
+
     for booking in bookings:
         proof = PaymentProof.objects.filter(booking=booking).first()
-        payment_status = proof.status if proof else None
 
         data.append({
             "booking_id": booking.id,
             "customer": booking.customer.username,
-            "service": booking.service.title,
+            "service": booking.provider_service.service.title,
+            "city": booking.provider_service.city.name,
             "booking_status": booking.status,
-            "payment_status": payment_status,
+            "payment_status": proof.status if proof else None,
+            "price": str(booking.final_price),
+            "date": booking.date.strftime("%Y-%m-%d"),
+            "time": booking.time.strftime("%H:%M"),
         })
 
     return JsonResponse({"bookings": data})
+
+@login_required
+def provider_services(request):
+    if request.user.role != 'provider':
+        messages.error(request, "Unauthorized access")
+        return redirect('index')
+
+    provider_services = (
+        ProviderService.objects
+        .filter(provider=request.user)
+        .select_related('service', 'city')
+    )
+
+    return render(request, 'provider_services.html', {
+        'provider_services': provider_services
+    })
+
+
+@login_required
+def booking_detail(request, booking_id):
+    booking = get_object_or_404(
+        Booking.objects.select_related(
+            'provider_service__service',
+            'provider_service__provider',
+            'provider_service__city',
+            'customer',
+        ),
+        id=booking_id
+    )
+
+    # 🔐 Security check
+    if (
+        request.user != booking.customer and
+        request.user != booking.provider_service.provider
+    ):
+        messages.error(request, "You are not allowed to view this booking.")
+        return redirect('index')
+
+    return render(request, 'booking_detail.html', {
+        'booking': booking
+    })
+
+
+
+
+def provider_profile(request, provider_id):
+    provider = get_object_or_404(
+        CustomUser,
+        id=provider_id,
+        role='provider'
+    )
+
+    services = Service.objects.filter(manager=provider)
+
+    average_rating = Review.objects.filter(
+        booking__service__manager=provider
+    ).aggregate(avg=Avg('rating'))['avg']
+
+    return render(request, 'booking/provider_profile.html', {
+        'provider': provider,
+        'services': services,
+        'average_rating': round(average_rating, 1) if average_rating else None
+    })
+
+@login_required
+def provider_payments(request):
+    if request.user.role != 'provider':
+        return redirect('index')
+
+    proofs = (
+        PaymentProof.objects
+        .filter(
+            booking__provider_service__provider=request.user,
+            status='pending'
+        )
+        .select_related('booking__customer', 'booking__provider_service__service')
+    )
+
+    return render(request, 'provider_payments.html', {
+        'proofs': proofs
+    })

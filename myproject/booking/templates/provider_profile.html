@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="min-h-screen bg-gradient-to-br from-[#FFF9F0] to-white py-14 px-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Profile Header -->
+    <div class="bg-white rounded-3xl shadow-xl p-8 mb-10 text-center"
+         data-aos="fade-down">
+
+      <div class="w-24 h-24 bg-[#FF6B00] text-white text-4xl rounded-full flex items-center justify-center mx-auto mb-4">
+        {{ provider.username|first|upper }}
+      </div>
+
+      <h2 class="text-3xl font-bold text-[#FF6B00]">
+        {{ provider.get_full_name|default:provider.username }}
+      </h2>
+
+      <p class="text-gray-600 mt-2">
+        ⭐ {{ average_rating|default:"No ratings yet" }}
+      </p>
+    </div>
+
+    <!-- Services -->
+    <h3 class="text-2xl font-bold text-gray-800 mb-6"
+        data-aos="fade-up">
+      Services Offered
+    </h3>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {% for service in services %}
+      <div class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition"
+           data-aos="zoom-in">
+
+        {% if service.image %}
+        <img src="{{ service.image.url }}"
+             class="h-44 w-full object-cover rounded-t-3xl">
+        {% endif %}
+
+        <div class="p-6 text-center">
+          <h4 class="text-lg font-bold text-[#FF6B00]">{{ service.title }}</h4>
+          <p class="text-sm text-gray-600 mb-3">
+            {{ service.description|truncatewords:12 }}
+          </p>
+
+          <a href="{% url 'service_detail' service.id %}"
+             class="inline-block px-4 py-2 bg-[#FF6B00] text-white rounded-full text-sm hover:bg-[#e85d00]">
+            View Service
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

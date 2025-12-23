@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+
 <section class="py-16 px-4 md:px-32 bg-gray-100 min-h-screen">
   <div class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-xl animate-fade-in-up">
-    
+
     <!-- Heading -->
-    <h2 class="text-3xl font-bold text-[#FF6B00] mb-6 text-center">Submit Your Review</h2>
+    <h2 class="text-3xl font-bold text-[#FF6B00] mb-6 text-center">
+      Submit Your Review
+    </h2>
 
     <!-- Flash Messages -->
     {% if messages %}
@@ -18,32 +21,44 @@
       </div>
     {% endif %}
 
+    <!-- Form Errors -->
+    {% if form.errors %}
+      <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+        Please correct the errors below.
+      </div>
+    {% endif %}
+
     <!-- Review Form -->
     <form method="post" novalidate class="space-y-6">
       {% csrf_token %}
 
-      <!-- Rating Field -->
+      <!-- Rating -->
       <div>
-        <label for="id_rating" class="block text-gray-700 font-medium mb-1">Rating</label>
-        <select name="rating" id="id_rating" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
-          <option value="">Select rating</option>
-          <option value="1">⭐ 1 - Poor</option>
-          <option value="2">⭐ 2 - Fair</option>
-          <option value="3">⭐ 3 - Good</option>
-          <option value="4">⭐ 4 - Very Good</option>
-          <option value="5">⭐ 5 - Excellent</option>
-        </select>
+        <label class="block text-gray-700 font-medium mb-1">
+          Rating
+        </label>
+        {{ form.rating }}
+        {% if form.rating.errors %}
+          <p class="text-red-500 text-sm mt-1">
+            {{ form.rating.errors.0 }}
+          </p>
+        {% endif %}
       </div>
 
-      <!-- Comment Field -->
+      <!-- Comment -->
       <div>
-        <label for="id_comment" class="block text-gray-700 font-medium mb-1">Your Comment</label>
-        <textarea name="comment" id="id_comment" rows="4"
-                  class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF6B00] resize-none"
-                  placeholder="Share your experience..."></textarea>
+        <label class="block text-gray-700 font-medium mb-1">
+          Your Comment
+        </label>
+        {{ form.comment }}
+        {% if form.comment.errors %}
+          <p class="text-red-500 text-sm mt-1">
+            {{ form.comment.errors.0 }}
+          </p>
+        {% endif %}
       </div>
 
-      <!-- Submit Button -->
+      <!-- Submit -->
       <div class="text-center">
         <button type="submit"
                 class="bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#e55a00] transition-all duration-300 shadow-lg hover:scale-105">
@@ -54,36 +69,21 @@
   </div>
 </section>
 
-<!-- ✅ Optional Fade In Animation -->
+<!-- Animation -->
 <style>
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-  .animate-fade-in-up {
-    animation: fade-in-up 0.6s ease-out;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
 </style>
+
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

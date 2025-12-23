@@ -5,321 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HomeService</title>
 
-  <!-- Tailwind (CDN for dev; for production use compiled CSS) -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- AOS (scroll animation) -->
-  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <!-- AOS -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
 
-  <!-- Fontawesome (icons) -->
+  <!-- FontAwesome -->
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
   <style>
-    /* App-style animated gradient background */
     :root {
-      --accent: #FF6B00;
-      --accent-2: #FFB86B;
-      --muted: #F7F5F2;
+      --accent: #ff6b00;
     }
-
     body {
-      background: radial-gradient(1000px 600px at 10% 10%, rgba(255, 107, 0, 0.06), transparent 10%),
-                  radial-gradient(800px 500px at 90% 80%, rgba(0, 122, 255, 0.03), transparent 10%),
-                  linear-gradient(180deg, #FFF9F0 0%, #FEFBF7 100%);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      color: #1F2937;
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      overflow-x: hidden; /* Prevent horizontal scroll from sidebar */
+      background: linear-gradient(180deg, #fff9f0, #fefbf7);
+      font-family: Inter, system-ui, sans-serif;
+      overflow-x: hidden;
     }
-
-    /* Soft glass card */
     .glass {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.72));
-      backdrop-filter: blur(8px) saturate(120%);
-      -webkit-backdrop-filter: blur(8px) saturate(120%);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-    }
-
-    /* Subtle floating blobs */
-    .floating {
-      position: absolute;
-      filter: blur(36px);
-      opacity: 0.55;
-      transform: translate3d(0, 0, 0);
-      pointer-events: none;
-      mix-blend-mode: multiply;
-    }
-
-    /* Small responsive tweaks for table/card look */
-    .table-header {
-      background-color: rgba(243, 244, 246, 0.9);
-    }
-
-    /* Clickable row hover */
-    .row-hover:hover {
-      background-color: rgba(0, 0, 0, 0.02);
-      transform: translateY(-1px);
-    }
-
-    /* Rounded shadow like an app card */
-    .app-card {
+      background: rgba(255,255,255,.8);
+      backdrop-filter: blur(8px);
       border-radius: 16px;
-      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
     }
-
-    /* Hamburger menu */
-    .hamburger {
-      position: relative;
-      z-index: 1050; 
-      display: none;
-      cursor: pointer;
-      padding: 0.5rem;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      /* z-index: 1001; */
-    }
-
-    .hamburger svg {
-      width: 24px;
-      height: 24px;
-      color: var(--accent);
-    }
-
-    /* Mobile sidebar */
-    .mobile-sidebar {
-      position: fixed;
-      top: 0;
-      left: -250px;
-      width: 250px;
-      height: 100%;
-      background: white;
-      padding: 1rem;
-      transition: left 0.3s ease;
-      z-index: 1000;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .mobile-sidebar.active {
-      left: 0;
-    }
-
-    .mobile-sidebar a {
-      display: block;
-      padding: 0.75rem 1rem;
-      color: #1F2937;
-      text-decoration: none;
-      transition: background-color 0.2s;
-    }
-
-    .mobile-sidebar a:hover {
-      background-color: rgba(255, 107, 0, 0.1);
-      color: var(--accent);
-    }
-
-    /* Overlay for closing sidebar */
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-    }
-
-    .sidebar-overlay.active {
-      display: block;
-    }
-
-    /* Media Queries */
-    @media (max-width: 768px) {
-      .desktop-menu {
-        display: none !important; /* Force hide desktop menu on mobile */
-      }
-      .hamburger {
-        display: block;
-      }
-      nav {
-        justify-content: space-between;
-      }
-      nav .flex.items-center.space-x-3 div.leading-tight .text-xs {
-        display: none; /* Hide subtext on mobile */
-      }
-      main {
-        margin-left: 0; /* Adjust main content margin */
-      }
+    .hamburger { display:none }
+    @media (max-width:768px){
+      .desktop-menu{display:none}
+      .hamburger{display:block}
     }
   </style>
 </head>
+
 <body>
-  <!-- Floating decorative blobs -->
-  <div aria-hidden="true">
-    <svg class="floating" width="520" height="520" style="left:-120px;top:-60px;position:fixed;" viewBox="0 0 520 520">
-      <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#FFB86B"/><stop offset="1" stop-color="#FF6B00"/></linearGradient></defs>
-      <circle cx="260" cy="260" r="220" fill="url(#g1)"/>
-    </svg>
 
-    <svg class="floating" width="420" height="420" style="right:-100px;bottom:-120px;position:fixed;" viewBox="0 0 420 420">
-      <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#60A5FA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs>
-      <ellipse cx="210" cy="200" rx="190" ry="110" fill="url(#g2)"/>
-    </svg>
-  </div>
+<!-- NAVBAR -->
+<header class="sticky top-0 z-50">
+  <nav class="glass mx-4 my-4 p-4 flex justify-between items-center">
+    <a href="/" class="font-extrabold text-xl text-[var(--accent)]">🛠️ HomeService</a>
 
-  <!-- NAVBAR -->
-  <header class="sticky top-0 z-50">
-    <nav class="glass app-card mx-4 md:mx-8 lg:mx-16 my-4 p-3 md:p-4 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <a href="/" class="flex items-center gap-3">
-          <span class="bg-gradient-to-br from-yellow-300 to-orange-500 p-2 rounded-lg shadow-md text-white text-lg">🛠️</span>
-          <div class="leading-tight">
-            <div class="text-xl font-extrabold" style="color:var(--accent)">HomeService</div>
-            <div class="text-xs text-gray-500 -mt-1">Reliable at your door</div>
-          </div>
+    <!-- DESKTOP MENU -->
+    <div class="desktop-menu flex gap-6 items-center">
+
+      <a href="/" class="hover:text-[var(--accent)]">Home</a>
+      <a href="{% url 'about' %}" class="hover:text-[var(--accent)]">About</a>
+      <a href="{% url 'services' %}" class="hover:text-[var(--accent)]">Services</a>
+
+      {% if request.user.is_authenticated %}
+
+        {% if request.user.role == 'provider' %}
+          <a href="{% url 'provider_dashboard' %}">Dashboard</a>
+        {% else %}
+          <a href="{% url 'customer_dashboard' %}">Dashboard</a>
+        {% endif %}
+
+        {% if request.user.role == 'customer' %}
+          <a href="{% url 'upload_payment_proof' %}">Payment</a>
+        {% endif %}
+
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="bg-[var(--accent)] text-white px-4 py-2 rounded-lg">
+            Logout
+          </button>
+        </form>
+
+      {% else %}
+
+        <a href="{% url 'contact' %}">Contact</a>
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register' %}" class="bg-[var(--accent)] text-white px-4 py-2 rounded-lg">
+          Register
         </a>
-      </div>
 
-      <!-- Desktop menu -->
-      <div class="desktop-menu flex items-center space-x-6 text-sm md:text-base font-medium">
-        <a href="/" class="nav-link text-gray-700 hover:text-[var(--accent)] transition">Home</a>
-        <a href="{% url 'about' %}" class="nav-link text-gray-700 hover:text-[var(--accent)] transition">About</a>
-        <a href="{% url 'services' %}" class="nav-link text-gray-700 hover:text-[var(--accent)] transition">Services</a>
-        {% if request.user.is_authenticated %}
-          {% if request.user.role == 'provider' %}
-            <a href="{% url 'provider_dashboard' %}" class="nav-link text-gray-700 hover:text-[var(--accent)] transition">Dashboard</a>
-          {% else %}
-            <a href="{% url 'customer_dashboard' %}" class="nav-link text-gray-700 hover:text-[var(--accent)] transition">Dashboard</a>
-          {% endif %}
-          <a href="{% url 'upload_payment_proof' %}" class="nav-link text-gray-700 hover:text-[var(--accent)] transition">Payment</a>
-          <a href="{% url 'logout' %}" class="ml-3 px-4 py-2 rounded-lg bg-[var(--accent)] text-white shadow-sm hover:opacity-95 transition">Logout</a>
-        {% else %}
-          <a href="{% url 'contact' %}" class="nav-link text-gray-700 hover:text-[var(--accent)] transition">Contact</a>
-          <a href="{% url 'login' %}" class="ml-3 px-4 py-2 rounded-lg bg-white border text-[var(--accent)] hover:shadow transition">Login</a>
-          <a href="{% url 'register' %}" class="ml-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:opacity-95 transition">Register</a>
-        {% endif %}
-      </div>
-
-      <!-- Hamburger menu button -->
-      <button id="burger" aria-label="Toggle sidebar" class="hamburger" onclick="toggleMobile()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-    </nav>
-
-    <!-- Mobile sidebar -->
-    <div id="mobileMenu" class="mobile-sidebar glass">
-      <div class="flex flex-col space-y-3">
-        <a href="/" class="py-2 px-3 rounded hover:bg-white/40">Home</a>
-        <a href="{% url 'services' %}" class="py-2 px-3 rounded hover:bg-white/40">Services</a>
-        <a href="{% url 'about' %}" class="py-2 px-3 rounded hover:bg-white/40">About</a>
-        {% if request.user.is_authenticated %}
-          {% if request.user.role == 'provider' %}
-            <a href="{% url 'provider_dashboard' %}" class="py-2 px-3 rounded hover:bg-white/40">Dashboard</a>
-          {% else %}
-            <a href="{% url 'customer_dashboard' %}" class="py-2 px-3 rounded hover:bg-white/40">Dashboard</a>
-          {% endif %}
-          <a href="{% url 'upload_payment_proof' %}" class="py-2 px-3 rounded hover:bg-white/40">Payment</a>
-          <a href="{% url 'logout' %}" class="py-2 px-3 rounded bg-[var(--accent)] text-white text-center">Logout</a>
-        {% else %}
-          <a href="{% url 'contact' %}" class="py-2 px-3 rounded hover:bg-white/40">Contact</a>
-          <a href="{% url 'login' %}" class="py-2 px-3 rounded bg-white text-[var(--accent)] text-center">Login</a>
-          <a href="{% url 'register' %}" class="py-2 px-3 rounded bg-[var(--accent)] text-white text-center">Register</a>
-        {% endif %}
-      </div>
+      {% endif %}
     </div>
 
-    <!-- Overlay for closing sidebar -->
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-  </header>
+    <!-- HAMBURGER -->
+    <button id="burger" class="hamburger">☰</button>
+  </nav>
 
-  <!-- MAIN CONTENT -->
-  <main class="mx-4 md:mx-8 lg:mx-16 mb-16">
-    {% block content %}
-    <!-- pages will render here -->
-    {% endblock %}
-    {% block extra_scripts %}{% endblock %}
+  <!-- MOBILE MENU -->
+  <div id="mobileMenu" class="hidden fixed top-0 left-0 w-64 h-full bg-white p-4 z-50">
+    <a href="/" class="block py-2">Home</a>
+    <a href="{% url 'services' %}" class="block py-2">Services</a>
+    <a href="{% url 'about' %}" class="block py-2">About</a>
 
-  </main>
+    {% if request.user.is_authenticated %}
 
-  <!-- FOOTER -->
-  <footer class="mt-12">
-    <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="glass p-6 rounded-xl app-card">
-        <h4 class="text-lg font-bold" style="color:var(--accent)">HomeService</h4>
-        <p class="text-sm text-gray-600 mt-2">Fast, reliable home services — cleaning, repairs, plumbing and more. Book in seconds.</p>
-        <div class="flex gap-3 mt-4">
-          <a class="p-2 rounded-md bg-white shadow text-[var(--accent)]" href="#"><i class="fab fa-facebook-f"></i></a>
-          <a class="p-2 rounded-md bg-white shadow text-[var(--accent)]" href="#"><i class="fab fa-instagram"></i></a>
-          <a class="p-2 rounded-md bg-white shadow text-[var(--accent)]" href="#"><i class="fab fa-twitter"></i></a>
-        </div>
-      </div>
+      {% if request.user.role == 'provider' %}
+        <a href="{% url 'provider_dashboard' %}" class="block py-2">Dashboard</a>
+      {% else %}
+        <a href="{% url 'customer_dashboard' %}" class="block py-2">Dashboard</a>
+      {% endif %}
 
-      <div class="glass p-6 rounded-xl app-card">
-        <h4 class="text-md font-semibold">Quick links</h4>
-        <ul class="mt-3 space-y-2 text-sm">
-          <li><a href="/" class="hover:text-[var(--accent)]">Home</a></li>
-          <li><a href="{% url 'about' %}" class="hover:text-[var(--accent)]">About</a></li>
-          <li><a href="{% url 'services' %}" class="hover:text-[var(--accent)]">Services</a></li>
-          {% if request.user.is_authenticated %}
-            {% if request.user.role == 'provider' %}
-              <li><a href="{% url 'provider_dashboard' %}" class="hover:text-[var(--accent)]">Dashboard</a></li>
-            {% else %}
-              <li><a href="{% url 'customer_dashboard' %}" class="hover:text-[var(--accent)]">Dashboard</a></li>
-            {% endif %}
-          {% else %}
-            <li><a href="{% url 'contact' %}" class="hover:text-[var(--accent)]">Contact</a></li>
-          {% endif %}
-        </ul>
-      </div>
+      {% if request.user.role == 'customer' %}
+        <a href="{% url 'upload_payment_proof' %}" class="block py-2">Payment</a>
+      {% endif %}
 
-      <div class="glass p-6 rounded-xl app-card">
-        <h4 class="text-md font-semibold">Contact</h4>
-        <p class="text-sm mt-2">📍 Lahore, Pakistan</p>
-        <p class="text-sm">📞 +92 312 3456789</p>
-        <p class="text-sm">📧 support@homeservice.com</p>
-      </div>
-    </div>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="w-full bg-[var(--accent)] text-white py-2 mt-2 rounded">
+          Logout
+        </button>
+      </form>
 
-    <div class="text-center text-xs text-gray-500 py-6">© <span class="font-semibold">HomeService</span> • All rights reserved • 2025</div>
-  </footer>
+    {% else %}
 
-  <!-- Scripts -->
-  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-  <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    AOS.init({ once: true, duration: 700 });
+      <a href="{% url 'contact' %}" class="block py-2">Contact</a>
+      <a href="{% url 'login' %}" class="block py-2">Login</a>
+      <a href="{% url 'register' %}" class="block py-2 bg-[var(--accent)] text-white rounded">
+        Register
+      </a>
 
-    const menu = document.getElementById('mobileMenu');
-    const overlay = document.getElementById('sidebarOverlay');
-    const burger = document.getElementById('burger');
+    {% endif %}
+  </div>
+</header>
 
-    function toggleMobile() {
-      const icon = burger.querySelector('svg');
-      const isActive = menu.classList.toggle('active');
-      overlay.classList.toggle('active');
-      icon.innerHTML = isActive
-        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
-        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>';
-    }
+<!-- MAIN -->
+<main class="mx-4 my-8">
+  {% block content %}{% endblock %}
+  {% block extra_scripts %}{% endblock %}
+</main>
 
-    burger.addEventListener('click', toggleMobile);
-    overlay.addEventListener('click', toggleMobile);
+<!-- FOOTER -->
+<footer class="text-center text-sm text-gray-500 py-6">
+  © 2025 HomeService — All rights reserved
+</footer>
 
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768) {
-        menu.classList.remove('active');
-        overlay.classList.remove('active');
-        burger.querySelector('svg').innerHTML =
-          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>';
-      }
-    });
-  });
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({ once: true });
+
+  const burger = document.getElementById("burger");
+  const menu = document.getElementById("mobileMenu");
+  burger.onclick = () => menu.classList.toggle("hidden");
 </script>
 
 </body>

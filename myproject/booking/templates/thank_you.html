@@ -4,26 +4,39 @@
 {% block content %}
 <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-[#fff3ea] px-4">
   <div class="bg-white shadow-xl rounded-2xl p-10 max-w-md text-center animate-fade-in-up transition-all duration-700">
-    <!-- ✅ Success Icon -->
+
+    <!-- Success Icon -->
     <div class="bg-green-100 text-green-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg">
       ✓
     </div>
 
-    <!-- ✅ Thank You Message -->
-    <h2 class="text-3xl font-bold text-[#FF6B00] mb-4">Thank You!</h2>
-    <p class="text-gray-700 text-lg mb-6">Your service has been successfully booked. We appreciate your trust in us.</p>
+    <!-- Message -->
+    <h2 class="text-3xl font-bold text-[#FF6B00] mb-4">
+      Thank You!
+    </h2>
 
-    <!-- ✅ Add Review or Show Submitted -->
+    <p class="text-gray-700 text-lg mb-6">
+      Your service has been successfully booked. We appreciate your trust in us.
+    </p>
 
-      <a href="/"
+    <!-- Actions -->
+    <div class="flex flex-col gap-3">
+      <a href="{% url 'index' %}"
          class="inline-block bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#e55a00] transition-all duration-300 shadow-md animate-pulse">
-        OK
+        Go to Home
       </a>
-   
+
+      {% if request.user.is_authenticated %}
+        <a href="{% url 'customer_dashboard' %}"
+           class="text-sm text-gray-600 hover:text-[#FF6B00] transition">
+          View My Bookings
+        </a>
+      {% endif %}
+    </div>
+
   </div>
 </section>
 
-<!-- ✅ Simple Animation -->
 <style>
 @keyframes fade-in-up {
   from {
