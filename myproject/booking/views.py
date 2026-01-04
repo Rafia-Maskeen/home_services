@@ -5,6 +5,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Avg
 from django.http import JsonResponse
+from decimal import Decimal
 from .models import (
     Service,
     ProviderService,
@@ -40,10 +41,22 @@ def contact(request):
     return render(request, 'contact.html')
 
 def services(request):
+    city_id = request.GET.get('city')
     services = Service.objects.all()
+    cities = City.objects.all()
+
+    if city_id:
+        services = services.filter(
+            providerservice__city_id=city_id,
+            providerservice__is_active=True
+        ).distinct()
+
     return render(request, 'services.html', {
-        'services': services
+        'services': services,
+        'cities': cities,
+        'selected_city': city_id,
     })
+
 
 
 def service_detail(request, service_id):
@@ -85,6 +98,7 @@ def create_booking(request, provider_service_id):
             booking.customer = request.user
             booking.provider_service = provider_service
             booking.status = 'pending'
+            booking.is_paid = False
             booking.save()
 
             return redirect('thank_you', booking_id=booking.id)
@@ -219,34 +233,43 @@ def customer_dashboard(request):
 
 @login_required
 def upload_payment_proof(request, booking_id=None):
-    if request.user.role == 'customer':
-        if request.method == 'POST':
-            form = PaymentProofForm(request.POST, request.FILES, user=request.user)
-            if form.is_valid():
-                payment_proof = form.save(commit=False)
-                payment_proof.customer = request.user
-                if booking_id:
-                    payment_proof.booking = get_object_or_404(Booking, id=booking_id, customer=request.user)
-                payment_proof.save()
-                messages.success(request, 'Payment proof uploaded successfully!')
-                return redirect('customer_dashboard')
-        else:
-            form = PaymentProofForm(user=request.user)
-        payment_proofs = PaymentProof.objects.filter(customer=request.user).order_by('-upload_date')
-        context = {
-            'form': form,
-            'payment_proofs': payment_proofs,
-        }
-        if booking_id:
-            context['booking'] = get_object_or_404(Booking, id=booking_id, customer=request.user)
+    if request.user.role != 'customer':
+        return redirect('index')
+
+    if request.method == 'POST':
+        form = PaymentProofForm(
+            request.POST,
+            request.FILES,
+            user=request.user
+        )
+        if form.is_valid():
+            proof = form.save(commit=False)
+            proof.customer = request.user
+            proof.save()
+
+            messages.success(
+                request,
+                "Payment submitted. Waiting for provider approval."
+            )
+            return redirect('customer_dashboard')
     else:
-        payment_proofs = PaymentProof.objects.filter(booking__service__manager=request.user).order_by('-upload_date')
-        total_earnings = request.user.wallet_balance
-        context = {
-            'payment_proofs': payment_proofs,
-            'total_earnings': total_earnings,
+        form = PaymentProofForm(user=request.user)
+
+    payment_proofs = PaymentProof.objects.filter(
+        customer=request.user
+    ).select_related(
+        'booking__provider_service__service'
+    )
+
+    return render(
+        request,
+        'upload_payment_proof.html',
+        {
+            'form': form,
+            'payment_proofs': payment_proofs
         }
-    return render(request, 'upload_payment_proof.html', context)
+    )
+
 
 @login_required
 def accept_booking(request, booking_id):
@@ -312,9 +335,35 @@ def complete_booking(request, booking_id):
 
 
 
-@login_required
-@transaction.atomic
 def approve_payment_proof(request, proof_id):
+    proof = get_object_or_404(PaymentProof, id=proof_id)
+    booking = proof.booking
+    provider = booking.provider_service.provider
+
+    if booking.final_price is None:
+        messages.error(
+            request,
+            "Cannot approve payment. Final price is not set for this booking."
+        )
+        return redirect('provider_payments')
+
+    # SAFETY: ensure wallet_balance is never None
+    provider.wallet_balance = provider.wallet_balance or Decimal("0.00")
+
+    provider.wallet_balance += booking.final_price
+
+    proof.status = 'approved'
+    booking.status = 'completed'
+
+    provider.save()
+    booking.save()
+    proof.save()
+
+    messages.success(request, "Payment approved successfully.")
+    return redirect('provider_payments')
+
+@login_required
+def reject_payment_proof(request, proof_id):
     proof = get_object_or_404(
         PaymentProof,
         id=proof_id,
@@ -322,39 +371,15 @@ def approve_payment_proof(request, proof_id):
         status='pending'
     )
 
-    booking = proof.booking
-    provider = booking.provider_service.provider
+    if request.method == 'POST':
+        proof.status = 'rejected'
+        proof.save()
+        messages.error(
+            request,
+            f'Payment proof for booking {proof.booking.id} rejected.'
+        )
 
-    proof.status = 'approved'
-    booking.status = 'completed'
-    provider.wallet_balance += booking.final_price
-
-    proof.save()
-    booking.save()
-    provider.save()
-
-    messages.success(request, "Payment approved successfully.")
     return redirect('provider_payments')
-
-
-@login_required
-def reject_payment_proof(request, proof_id):
-    if request.user.role != 'provider':
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('index')
-    payment_proof = get_object_or_404(
-    PaymentProof,
-    id=proof_id,
-    booking__provider_service__provider=request.user
-)
-
-    if request.method == 'POST' and payment_proof.status == 'pending' and payment_proof.booking.status == 'awaiting_payment':
-        payment_proof.status = 'rejected'
-        payment_proof.save()
-        messages.error(request, f'Payment proof for booking {payment_proof.booking.id} rejected.')
-    else:
-        messages.error(request, 'This payment proof cannot be rejected.')
-    return redirect('upload_payment_proof')
 
 @login_required
 def customer_polling(request):
@@ -507,3 +532,7 @@ def provider_payments(request):
     return render(request, 'provider_payments.html', {
         'proofs': proofs
     })
+
+
+
+

@@ -67,6 +67,7 @@ class Booking(models.Model):
 
     date = models.DateField()
     time = models.TimeField()
+    address = models.TextField(blank=True)  # 👈 allow blank
 
     final_price = models.DecimalField(
         max_digits=10,
@@ -80,6 +81,14 @@ class Booking(models.Model):
         choices=STATUS_CHOICES,
         default='pending'
     )
+
+    created_at = models.DateTimeField(
+        default=timezone.now,   # ✅ IMPORTANT
+        editable=False
+    )
+
+
+
 
 
 
@@ -98,11 +107,38 @@ class PaymentProof(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     )
-    customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payment_proofs')
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='payment_proofs')
-    file = models.FileField(upload_to='payment_proofs/')
+
+    customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    booking = models.ForeignKey(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name='payment_proofs'
+    )
+
+    file = models.FileField(
+        upload_to='payment_proofs/',
+        blank=True,
+        null=True
+    )
+
     upload_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+
+    def approve(self):
+        """Admin approval hook"""
+        self.status = 'approved'
+        self.save()
+
+        # ✅ MARK BOOKING AS PAID
+        self.booking.is_paid = True
+        self.booking.status = 'confirmed'
+        self.booking.save()
 
     def __str__(self):
-        return f"Payment proof for {self.booking} by {self.customer.username}"
+        return f"Payment for {self.booking.provider_service.service.title}"
+

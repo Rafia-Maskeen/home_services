@@ -1,47 +1,315 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<section class="max-w-6xl mx-auto py-12">
-  <h2 class="text-3xl font-bold mb-6 text-[#FF6B00]">Payment Approvals</h2>
+<section class="min-h-screen bg-gradient-to-br from-[#FFEFBA] via-[#FFF5E1] to-[#FFFFFF] py-12 px-4 relative overflow-hidden">
+  <!-- Decorative Background Elements -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-yellow-200/20 rounded-full blur-3xl"></div>
 
-  {% if proofs %}
-  <table class="w-full bg-white shadow rounded-xl">
-    <thead class="bg-gray-100">
-      <tr>
-        <th class="p-3">Customer</th>
-        <th class="p-3">Service</th>
-        <th class="p-3">Amount</th>
-        <th class="p-3">Proof</th>
-        <th class="p-3">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for proof in proofs %}
-      <tr class="border-t">
-        <td class="p-3">{{ proof.booking.customer.username }}</td>
-        <td class="p-3">{{ proof.booking.provider_service.service.title }}</td>
-        <td class="p-3">Rs. {{ proof.booking.final_price }}</td>
-        <td class="p-3">
-          <a href="{{ proof.file.url }}" target="_blank"
-             class="text-blue-600 underline">
-            View Proof
-          </a>
-        </td>
-        <td class="p-3">
-          <form method="post" action="{% url 'approve_payment' proof.id %}">
-            {% csrf_token %}
-            <button class="px-4 py-2 bg-green-600 text-white rounded">
-              Approve
-            </button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-    <p class="text-gray-600">No pending payments.</p>
-  {% endif %}
+  <div class="max-w-6xl mx-auto relative z-10">
+
+    <!-- Header -->
+    <div class="text-center mb-10 animate-fade-in">
+      <h1 class="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] bg-clip-text text-transparent drop-shadow-lg mb-2">
+        Payment Requests
+      </h1>
+      <div class="h-1.5 w-24 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] rounded-full mx-auto mb-4"></div>
+      <p class="text-gray-600 text-lg">Review and approve customer payment confirmations</p>
+    </div>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+      <div class="mb-8 space-y-4">
+        {% for message in messages %}
+          <div class="p-5 rounded-2xl text-white text-center font-semibold shadow-2xl backdrop-blur-md transform hover:scale-[1.02] transition-all duration-300
+            {% if 'error' in message.tags %}bg-gradient-to-r from-red-500 to-red-600{% else %}bg-gradient-to-r from-green-500 to-green-600{% endif %}">
+            {% if 'error' in message.tags %}❌{% else %}✅{% endif %} {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if proofs %}
+      <!-- Stats Card -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-orange-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-semibold uppercase">Total Requests</p>
+              <p class="text-4xl font-bold text-[#FF6B00] mt-2">{{ proofs|length }}</p>
+            </div>
+            <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-yellow-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-semibold uppercase">Pending Review</p>
+              <p class="text-4xl font-bold text-yellow-600 mt-2">{{ proofs|length }}</p>
+            </div>
+            <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-green-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-semibold uppercase">Action Needed</p>
+              <p class="text-4xl font-bold text-green-600 mt-2">{{ proofs|length }}</p>
+            </div>
+            <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Table Card -->
+      <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 ring-4 ring-orange-100/50 overflow-hidden hover:shadow-orange-200/50 transition-all duration-300">
+        
+        <!-- Table Header -->
+        <div class="px-6 sm:px-8 py-5 border-b border-orange-100 bg-gradient-to-r from-orange-50 to-transparent">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gradient-to-br from-[#FF6B00] to-[#FF8C00] rounded-xl flex items-center justify-center shadow-lg">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold text-gray-800">Pending Payments</h2>
+                <p class="text-sm text-gray-600">Review and approve customer payments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Content -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-gradient-to-r from-orange-100 via-orange-50 to-yellow-50 text-gray-700 uppercase text-sm">
+              <tr class="shadow-md">
+                <th class="p-5 first:rounded-tl-2xl font-bold">Customer</th>
+                <th class="p-5 font-bold">Service</th>
+                <th class="p-5 font-bold">Amount</th>
+                <th class="p-5 font-bold">Payment Proof</th>
+                <th class="p-5 font-bold">Upload Date</th>
+                <th class="p-5 last:rounded-tr-2xl font-bold text-center">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-100">
+              {% for proof in proofs %}
+              <tr class="hover:bg-gradient-to-r hover:from-orange-50/80 hover:to-transparent transition-all duration-200 group">
+
+                <!-- Customer -->
+                <td class="p-5">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                      {{ proof.booking.customer.username|first|upper }}
+                    </div>
+                    <div>
+                      <div class="font-semibold text-gray-900">
+                        {{ proof.booking.customer.username }}
+                      </div>
+                      <div class="text-xs text-gray-500">
+                        {{ proof.booking.customer.email }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Service -->
+                <td class="p-5">
+                  <div class="font-semibold text-gray-900 group-hover:text-[#FF6B00] transition-colors">
+                    {{ proof.booking.provider_service.service.title }}
+                  </div>
+                  <div class="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    {{ proof.booking.provider_service.city.name }}
+                  </div>
+                </td>
+
+                <!-- Amount -->
+                <td class="p-5">
+                  <div class="font-bold text-xl text-[#FF6B00]">
+                    {% if proof.booking.final_price %}
+                      Rs. {{ proof.booking.final_price|floatformat:2 }}
+                    {% else %}
+                      <span class="text-gray-400 text-base">—</span>
+                    {% endif %}
+                  </div>
+                </td>
+
+                <!-- Proof -->
+                <td class="p-5">
+                  {% if proof.file %}
+                    <a href="{{ proof.file.url }}" target="_blank"
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium shadow-lg hover:shadow-blue-400/50 transform hover:-translate-y-0.5 transition-all duration-200 text-sm">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      View Proof
+                    </a>
+                  {% else %}
+                    <span class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg text-sm font-medium">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      No file uploaded
+                    </span>
+                  {% endif %}
+                </td>
+
+                <!-- Upload Date -->
+                <td class="p-5">
+                  <div class="text-sm text-gray-700 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <div>
+                      <div>{{ proof.upload_date|date:"M j, Y" }}</div>
+                      <div class="text-xs text-gray-500">{{ proof.upload_date|date:"g:i A" }}</div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td class="p-5">
+                  <div class="flex gap-2 justify-center">
+                    <!-- APPROVE -->
+                    <form method="post" action="{% url 'approve_payment_proof' proof.id %}" class="inline">
+                      {% csrf_token %}
+                      <button class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-medium shadow-lg hover:shadow-green-400/50 transform hover:-translate-y-0.5 transition-all duration-200 text-sm inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Approve
+                      </button>
+                    </form>
+
+                    <!-- REJECT -->
+                    <form method="post" action="{% url 'reject_payment_proof' proof.id %}" class="inline">
+                      {% csrf_token %}
+                      <button class="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-medium shadow-lg hover:shadow-red-400/50 transform hover:-translate-y-0.5 transition-all duration-200 text-sm inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Reject
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 ring-4 ring-orange-100/50 p-16 text-center">
+        <div class="max-w-md mx-auto">
+          <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-green-100 to-green-50 rounded-full flex items-center justify-center">
+            <svg class="w-16 h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-3xl font-bold text-gray-800 mb-3">All Caught Up! 🎉</h3>
+          <p class="text-gray-600 text-lg mb-2">No pending payment requests at the moment</p>
+          <p class="text-gray-500 text-sm">New payment requests will appear here when customers submit them</p>
+          
+          <div class="mt-8 pt-8 border-t border-gray-200">
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div class="text-2xl font-bold text-[#FF6B00]">0</div>
+                <div class="text-xs text-gray-500 uppercase">Pending</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-green-600">—</div>
+                <div class="text-xs text-gray-500 uppercase">Approved</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-red-600">—</div>
+                <div class="text-xs text-gray-500 uppercase">Rejected</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
 </section>
+
+<style>
+  /* Custom animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #FF6B00, #FF8C00);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #e85d00, #FF6B00);
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Add smooth entrance animation to table rows
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach((row, index) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(10px)';
+      setTimeout(() => {
+        row.style.transition = 'all 0.3s ease-out';
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, index * 50);
+    });
+  });
+</script>
 
 {% endblock %}

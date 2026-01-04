@@ -11,6 +11,25 @@
   <p class="text-[#444] mt-2 text-lg" data-aos="fade-up" data-aos-delay="100">
     Choose the right service that suits your needs.
   </p>
+
+  <!-- CITY FILTER (ADDED) -->
+  <form method="get" class="mt-6 flex justify-center">
+    <select
+      name="city"
+      onchange="this.form.submit()"
+      class="px-4 py-2 rounded-xl border border-orange-300
+             bg-white text-gray-700 font-medium shadow-sm
+             focus:outline-none focus:ring-2 focus:ring-orange-400"
+    >
+      <option value="">All Cities</option>
+      {% for city in cities %}
+        <option value="{{ city.id }}"
+          {% if city.id|stringformat:"s" == selected_city %}selected{% endif %}>
+          {{ city.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </form>
 </section>
 
 <!-- Services Grid -->
@@ -31,13 +50,15 @@
 
           <!-- Image -->
           {% if service.image %}
-            <img src="{{ service.image.url }}"
-                 alt="{{ service.title }}"
-                 class="w-full h-[330px] object-cover transform group-hover:scale-110 transition duration-500">
+            <img
+              src="{{ service.image.url }}"
+              alt="{{ service.title }}"
+              class="w-full h-[330px] object-cover transform group-hover:scale-110 transition duration-500">
           {% else %}
-            <img src="{% static 'images/placeholder.jpg' %}"
-                 alt="No Image"
-                 class="w-full h-[330px] object-cover transform group-hover:scale-110 transition duration-500">
+            <img
+              src="{% static 'images/placeholder.jpg' %}"
+              alt="No Image"
+              class="w-full h-[330px] object-cover transform group-hover:scale-110 transition duration-500">
           {% endif %}
 
           <!-- Content -->
@@ -56,9 +77,10 @@
             </p>
 
             <div class="flex justify-center">
-              <a href="{% url 'service_detail' service.id %}"
-                 class="transition-all duration-300 transform hover:scale-105 hover:shadow-md
-                        text-sm px-5 py-2 bg-[#FF6B00] text-white font-semibold rounded-full hover:bg-orange-600">
+              <a
+                href="{% url 'service_detail' service.id %}?city={{ selected_city }}"
+                class="transition-all duration-300 transform hover:scale-105 hover:shadow-md
+                       text-sm px-5 py-2 bg-[#FF6B00] text-white font-semibold rounded-full hover:bg-orange-600">
                 View Providers
               </a>
             </div>
@@ -68,7 +90,7 @@
       {% endfor %}
     {% else %}
       <p class="text-gray-600 text-center col-span-full">
-        No services available.
+        No services available for this city.
       </p>
     {% endif %}
 

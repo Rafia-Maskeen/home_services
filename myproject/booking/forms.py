@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import Booking, Review, PaymentProof, CustomUser, Service,ProviderService, City
 
@@ -31,22 +32,45 @@ class LoginForm(forms.Form):
 
 # -------------------- Booking Form --------------------
 class BookingForm(forms.ModelForm):
-    date = forms.DateField(
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'class': 'w-full p-3 rounded-xl border border-gray-300',
-        })
-    )
-    time = forms.TimeField(
-        widget=forms.TimeInput(attrs={
-            'type': 'time',
-            'class': 'w-full p-3 rounded-xl border border-gray-300',
-        })
-    )
-
     class Meta:
         model = Booking
-        fields = ['date', 'time']
+        fields = ['date', 'time', 'address']
+        widgets = {
+            'date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'w-full p-3 rounded-xl border'
+            }),
+            'time': forms.TimeInput(attrs={
+                'type': 'time',
+                'class': 'w-full p-3 rounded-xl border'
+            }),
+            'address': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full p-3 rounded-xl border',
+                'placeholder': 'Enter service address'
+            }),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        time = cleaned_data.get('time')
+
+        if not date or not time:
+            return cleaned_data
+
+        now = timezone.now()
+
+        # ❌ Past date
+        if date < now.date():
+            raise forms.ValidationError("You cannot select a past date.")
+
+        # ❌ Past time if booking today
+        if date == now.date() and time <= now.time():
+            raise forms.ValidationError("You cannot select a past time.")
+
+        return cleaned_data
+
 
 # -------------------- Review Form --------------------
 class ReviewForm(forms.ModelForm):
@@ -54,53 +78,41 @@ class ReviewForm(forms.ModelForm):
         model = Review
         fields = ['rating', 'comment']
         widgets = {
-            'comment': forms.Textarea(attrs={
-                'class': 'form-control w-full p-3 rounded-xl border border-gray-300',
-                'rows': 4,
-                'placeholder': 'Write your review here...'
-            }),
             'rating': forms.NumberInput(attrs={
-                'class': 'form-control w-full p-3 rounded-xl border border-gray-300',
                 'min': 1,
                 'max': 5,
-                'placeholder': 'Rate from 1 to 5'
+                'class': 'w-full p-3 rounded-xl border'
+            }),
+            'comment': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'w-full p-3 rounded-xl border',
+                'placeholder': 'Write your review here...'
             }),
         }
+
 
 # -------------------- Payment Proof Form --------------------
 class PaymentProofForm(forms.ModelForm):
-    booking = forms.ModelChoiceField(
-        queryset=Booking.objects.none(),
-        empty_label="Select a booking",
-        widget=forms.Select(attrs={
-            'class': 'w-full p-3 rounded-xl border border-gray-300',
-        })
-    )
-
     class Meta:
         model = PaymentProof
         fields = ['booking', 'file']
-        widgets = {
-            'file': forms.FileInput(attrs={
-                'class': 'w-full p-3 rounded-xl border border-gray-300',
-                'accept': 'image/*,application/pdf'
-            }),
-        }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         if user:
-            self.fields['booking'].queryset = (
-                Booking.objects
-                .filter(customer=user, status='awaiting_payment')
-                .select_related(
-                    'provider_service',
-                    'provider_service__provider',
-                    'provider_service__service'
-                )
+            qs = Booking.objects.filter(
+                customer=user,
+                status='awaiting_payment'
+            ).select_related('provider_service__service')
+
+            self.fields['booking'].queryset = qs
+            self.fields['booking'].label_from_instance = (
+                lambda b: f"{b.provider_service.service.title} – {b.date} {b.time.strftime('%I:%M %p')}"
             )
+
+
 # -------------------- Service Form --------------------
 class ProviderServiceForm(forms.ModelForm):
     class Meta:
@@ -116,15 +128,20 @@ class ProviderServiceForm(forms.ModelForm):
 # -------------------- Complete Service Form --------------------
 # forms.py
 class CompleteServiceForm(forms.ModelForm):
-    class Meta:
-        model = Booking
-        fields = ['final_price']
-
     final_price = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         min_value=1,
-        label="Final Service Price (Rs.)"
+        label="Final Service Price (Rs.)",
+        widget=forms.NumberInput(attrs={
+            'class': 'w-full p-3 rounded-xl border',
+            'placeholder': 'Enter final service price'
+        })
     )
+
+    class Meta:
+        model = Booking
+        fields = ['final_price']
+
 
 

@@ -43,18 +43,16 @@ path(
     path('customer/dashboard/', views.customer_dashboard, name='customer_dashboard'),
 
     # -------- Payment Proofs --------
-    path(
-        'payments/upload/',
-        views.upload_payment_proof,
-        name='upload_payment_proof'
-    ),
+    path('payments/upload/', views.upload_payment_proof, name='upload_payment_proof'),
     path(
         'payments/upload/<int:booking_id>/',
         views.upload_payment_proof,
-        name='upload_payment_proof_specific'
+        name='upload_payment_proof'
     ),
     path('provider/payments/', views.provider_payments, name='provider_payments'),
     path('provider/payment/approve/<int:proof_id>/', views.approve_payment_proof, name='approve_payment'),
+    path('provider/payment/approve/<int:proof_id>/', views.approve_payment_proof, name='approve_payment_proof'),
+    path('provider/payment/reject/<int:proof_id>/', views.reject_payment_proof, name='reject_payment_proof'),
 
 
     # -------- Provider Actions --------

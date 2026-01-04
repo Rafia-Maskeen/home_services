@@ -2,203 +2,445 @@
 {% load static %}
 {% block content %}
 
-<section class="min-h-screen bg-gradient-to-br from-[#FFEFBA] to-[#FFFFFF] py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
-  <div class="container mx-auto max-w-4xl">
+<section class="min-h-screen bg-gradient-to-br from-[#FFEFBA] via-[#FFF5E1] to-[#FFFFFF] py-12 px-4 relative overflow-hidden">
+  <!-- Decorative Background Elements -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-yellow-200/20 rounded-full blur-3xl"></div>
 
-    <!-- Messages -->
+  <div class="container mx-auto max-w-6xl relative z-10">
+
+    <!-- Header -->
+    <div class="text-center mb-10 animate-fade-in">
+      <h1 class="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] bg-clip-text text-transparent drop-shadow-lg mb-2">
+        {% if request.user.role == 'customer' %}Payment Submission{% else %}Payment Management{% endif %}
+      </h1>
+      <div class="h-1.5 w-32 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] rounded-full mx-auto mb-4"></div>
+      <p class="text-gray-600 text-lg">
+        {% if request.user.role == 'customer' %}
+          Upload your payment proof securely
+        {% else %}
+          Review and approve payment confirmations
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- FLASH MESSAGES -->
     {% if messages %}
-      {% for message in messages %}
-        <div class="mb-3 sm:mb-4 p-3 sm:p-4 {% if message.tags == 'error' %}bg-red-500{% else %}bg-green-500{% endif %} text-white rounded-lg sm:rounded-xl font-semibold text-center text-sm sm:text-base">
-          {% if message.tags == 'error' %}❌{% else %}✅{% endif %}
-          {{ message }}
-        </div>
-      {% endfor %}
+      <div class="mb-8 space-y-4">
+        {% for message in messages %}
+          <div class="p-5 rounded-2xl text-white text-center font-semibold shadow-2xl backdrop-blur-md transform hover:scale-[1.02] transition-all duration-300
+            {% if 'error' in message.tags %}bg-gradient-to-r from-red-500 to-red-600{% else %}bg-gradient-to-r from-green-500 to-green-600{% endif %}">
+            {% if 'error' in message.tags %}❌{% else %}✅{% endif %} {{ message }}
+          </div>
+        {% endfor %}
+      </div>
     {% endif %}
 
     {% if request.user.role == 'customer' %}
-    <!-- ================= CUSTOMER ================= -->
+    <!-- ================= CUSTOMER VIEW ================= -->
 
-    <div class="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 mb-8">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">
-        Upload Payment Proof
-      </h2>
+    <!-- Payment Submission Form -->
+    <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 mb-10 border border-white/50 ring-4 ring-orange-100/50 hover:shadow-orange-200/50 transition-all duration-300">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-[#FF6B00] to-[#FF8C00] rounded-xl flex items-center justify-center shadow-lg">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Payment Confirmation</h2>
+          <p class="text-gray-600 text-sm">Submit your payment details below</p>
+        </div>
+      </div>
 
       <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
 
-        {% if form.errors %}
-          <div class="text-red-600 text-sm">
-            <ul>
-              {% for field in form %}
-                {% for error in field.errors %}
-                  <li>{{ field.label }}: {{ error }}</li>
-                {% endfor %}
-              {% endfor %}
-            </ul>
-          </div>
-        {% endif %}
-
-        <div>
-          <label class="block text-sm font-medium mb-1">
+        <!-- BOOKING SELECT -->
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-700 flex items-center gap-2">
+            <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
             Select Booking
           </label>
           {{ form.booking }}
         </div>
 
-        <div>
-          <label class="block text-sm font-medium mb-1">
-            Upload File (Image or PDF)
+        <!-- FILE UPLOAD -->
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-700 flex items-center gap-2">
+            <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            Upload Payment Proof (Optional)
           </label>
-          {{ form.file }}
+          <div class="relative">
+            {{ form.file }}
+          </div>
+          <p class="text-xs text-gray-500 flex items-center gap-1 mt-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            You may submit without uploading a file. Supported formats: JPG, PNG, PDF
+          </p>
         </div>
 
         <button type="submit"
-                class="w-full py-3 bg-[#FF6B00] text-white font-semibold rounded-xl hover:bg-[#e85d00] transition">
-          Upload Payment Proof
+                class="w-full py-4 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] text-white font-bold rounded-xl shadow-xl hover:shadow-orange-400/50 transform hover:-translate-y-1 transition-all duration-200 border-b-4 border-[#e85d00] flex items-center justify-center gap-2 group">
+          <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Submit Payment
         </button>
       </form>
     </div>
 
-    <!-- Previous Proofs -->
-    <div class="bg-white rounded-3xl shadow-2xl p-4 sm:p-8">
-      <h3 class="text-2xl font-bold text-gray-800 mb-4">
-        Your Uploaded Payment Proofs
-      </h3>
+    <!-- CUSTOMER PAYMENT HISTORY -->
+    <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/50 ring-4 ring-orange-100/50 hover:shadow-orange-200/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold text-gray-800">Your Payment History</h3>
+            <p class="text-gray-600 text-sm">Track all your payment submissions</p>
+          </div>
+        </div>
+        <div class="px-4 py-2 bg-gradient-to-r from-orange-100 to-orange-50 rounded-full">
+          <span class="text-[#FF6B00] font-bold">{{ payment_proofs|length }} records</span>
+        </div>
+      </div>
 
       {% if payment_proofs %}
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[40rem] text-left">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-3">Booking</th>
-                <th class="p-3">Service</th>
-                <th class="p-3">Upload Date</th>
-                <th class="p-3">File</th>
-                <th class="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for proof in payment_proofs %}
-                <tr class="border-t">
-                  <td class="p-3">#{{ proof.booking.id }}</td>
-                  <td class="p-3">
-                    {{ proof.booking.provider_service.service.title }}
-                  </td>
-                  <td class="p-3">
-                    {{ proof.upload_date|date:"Y-m-d H:i" }}
-                  </td>
-                  <td class="p-3">
-                    <a href="{{ proof.file.url }}" target="_blank"
-                       class="text-[#FF6B00] hover:underline">
-                      View File
-                    </a>
-                  </td>
-                  <td class="p-3">
-                    {{ proof.get_status_display }}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      <div class="overflow-x-auto rounded-2xl shadow-inner">
+        <table class="w-full min-w-[40rem] text-left">
+          <thead class="bg-gradient-to-r from-orange-100 via-orange-50 to-yellow-50 text-gray-700 uppercase text-sm">
+            <tr class="shadow-md">
+              <th class="p-5 first:rounded-tl-2xl font-bold">Service</th>
+              <th class="p-5 font-bold">Date Submitted</th>
+              <th class="p-5 font-bold">Payment Proof</th>
+              <th class="p-5 last:rounded-tr-2xl font-bold">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for proof in payment_proofs %}
+            <tr class="hover:bg-gradient-to-r hover:from-orange-50/80 hover:to-transparent transition-all duration-200">
+              <td class="p-5">
+                <div class="font-semibold text-gray-900">
+                  {{ proof.booking.provider_service.service.title }}
+                </div>
+                <div class="text-sm text-gray-600">
+                  {{ proof.booking.provider_service.city.name }}
+                </div>
+              </td>
+              <td class="p-5 text-gray-700">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  {{ proof.upload_date|date:"M j, Y" }}
+                  <span class="text-gray-500">at</span>
+                  {{ proof.upload_date|date:"g:i a" }}
+                </div>
+              </td>
+              <td class="p-5">
+                {% if proof.file %}
+                  <a href="{{ proof.file.url }}" target="_blank"
+                     class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium shadow-lg hover:shadow-blue-400/50 transform hover:-translate-y-0.5 transition-all duration-200 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    View File
+                  </a>
+                {% else %}
+                  <span class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm italic">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    No file uploaded
+                  </span>
+                {% endif %}
+              </td>
+              <td class="p-5">
+                <span class="px-4 py-2 rounded-full text-xs font-bold shadow-md inline-flex items-center gap-1
+                  {% if proof.status == 'pending' %}bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800
+                  {% elif proof.status == 'approved' %}bg-gradient-to-r from-green-100 to-green-200 text-green-800
+                  {% else %}bg-gradient-to-r from-red-100 to-red-200 text-red-800{% endif %}">
+                  <span class="w-2 h-2 rounded-full
+                    {% if proof.status == 'pending' %}bg-yellow-500 animate-pulse
+                    {% elif proof.status == 'approved' %}bg-green-500
+                    {% else %}bg-red-500{% endif %}"></span>
+                  {{ proof.get_status_display }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
-        <p class="text-center text-gray-600">
-          No payment proofs uploaded yet.
-        </p>
+        <div class="text-center py-16">
+          <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <p class="text-gray-500 text-xl font-medium">No payment records yet</p>
+          <p class="text-gray-400 mt-2">Submit your first payment above to see it here!</p>
+        </div>
       {% endif %}
     </div>
 
     {% else %}
-    <!-- ================= PROVIDER ================= -->
+    <!-- ================= PROVIDER VIEW ================= -->
 
-    <div class="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 mb-8">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">
-        Your Wallet
-      </h2>
-
-      <p class="text-xl font-semibold text-[#FF6B00]">
-        Total Earnings: Rs. {{ total_earnings|floatformat:2 }}
-      </p>
-      <p class="text-gray-600 mb-6">
-        Based on approved payment proofs.
-      </p>
-
-      <h3 class="text-xl font-bold mb-4">
-        Payment Proofs
-      </h3>
+    <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/50 ring-4 ring-orange-100/50 hover:shadow-orange-200/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-14 h-14 bg-gradient-to-br from-[#FF6B00] to-[#FF8C00] rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-800">Payment Requests</h2>
+            <p class="text-gray-600 text-sm">Review and approve customer payments</p>
+          </div>
+        </div>
+        <div class="px-5 py-2 bg-gradient-to-r from-orange-100 to-orange-50 rounded-full">
+          <span class="text-[#FF6B00] font-bold text-lg">{{ payment_proofs|length }} requests</span>
+        </div>
+      </div>
 
       {% if payment_proofs %}
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[50rem] text-left">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-3">Booking</th>
-                <th class="p-3">Customer</th>
-                <th class="p-3">Service</th>
-                <th class="p-3">Amount</th>
-                <th class="p-3">Upload Date</th>
-                <th class="p-3">File</th>
-                <th class="p-3">Status</th>
-                <th class="p-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for proof in payment_proofs %}
-                <tr class="border-t">
-                  <td class="p-3">#{{ proof.booking.id }}</td>
-                  <td class="p-3">{{ proof.booking.customer.username }}</td>
-                  <td class="p-3">
-                    {{ proof.booking.provider_service.service.title }}
-                  </td>
-                  <td class="p-3">
-                    Rs. {{ proof.booking.final_price|floatformat:2 }}
-                  </td>
-                  <td class="p-3">
-                    {{ proof.upload_date|date:"Y-m-d H:i" }}
-                  </td>
-                  <td class="p-3">
-                    <a href="{{ proof.file.url }}" target="_blank"
-                       class="text-[#FF6B00] hover:underline">
-                      View File
-                    </a>
-                  </td>
-                  <td class="p-3">
-                    {{ proof.get_status_display }}
-                  </td>
-                  <td class="p-3">
-                    {% if proof.status == 'pending' and proof.booking.status == 'awaiting_payment' %}
-                      <form method="post" action="{% url 'approve_payment_proof' proof.id %}" class="inline">
-                        {% csrf_token %}
-                        <button class="px-3 py-1 bg-green-500 text-white rounded text-xs">
-                          Accept
-                        </button>
-                      </form>
-                      <form method="post" action="{% url 'reject_payment_proof' proof.id %}" class="inline">
-                        {% csrf_token %}
-                        <button class="px-3 py-1 bg-red-500 text-white rounded text-xs">
-                          Deny
-                        </button>
-                      </form>
-                    {% else %}
-                      <span class="text-gray-500 text-xs">
-                        No actions
-                      </span>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      <div class="overflow-x-auto rounded-2xl shadow-inner">
+        <table class="w-full min-w-[50rem] text-left">
+          <thead class="bg-gradient-to-r from-orange-100 via-orange-50 to-yellow-50 text-gray-700 uppercase text-sm">
+            <tr class="shadow-md">
+              <th class="p-5 first:rounded-tl-2xl font-bold">Customer</th>
+              <th class="p-5 font-bold">Service</th>
+              <th class="p-5 font-bold">Amount</th>
+              <th class="p-5 font-bold">Payment Proof</th>
+              <th class="p-5 font-bold">Status</th>
+              <th class="p-5 last:rounded-tr-2xl font-bold">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for proof in payment_proofs %}
+            <tr class="hover:bg-gradient-to-r hover:from-orange-50/80 hover:to-transparent transition-all duration-200">
+              <td class="p-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                    {{ proof.booking.customer.username|first|upper }}
+                  </div>
+                  <div>
+                    <div class="font-semibold text-gray-900">
+                      {{ proof.booking.customer.username }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ proof.booking.customer.email }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="p-5">
+                <div class="font-semibold text-gray-900">
+                  {{ proof.booking.provider_service.service.title }}
+                </div>
+                <div class="text-sm text-gray-600">
+                  {{ proof.booking.provider_service.city.name }}
+                </div>
+              </td>
+              <td class="p-5">
+                <div class="font-bold text-lg text-[#FF6B00]">
+                  Rs. {{ proof.booking.final_price|floatformat:2 }}
+                </div>
+              </td>
+              <td class="p-5">
+                {% if proof.file %}
+                  <a href="{{ proof.file.url }}" target="_blank"
+                     class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium shadow-lg hover:shadow-blue-400/50 transform hover:-translate-y-0.5 transition-all duration-200 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    View Proof
+                  </a>
+                {% else %}
+                  <span class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm italic">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    No file
+                  </span>
+                {% endif %}
+              </td>
+              <td class="p-5">
+                <span class="px-4 py-2 rounded-full text-xs font-bold shadow-md inline-flex items-center gap-1
+                  {% if proof.status == 'pending' %}bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800
+                  {% elif proof.status == 'approved' %}bg-gradient-to-r from-green-100 to-green-200 text-green-800
+                  {% else %}bg-gradient-to-r from-red-100 to-red-200 text-red-800{% endif %}">
+                  <span class="w-2 h-2 rounded-full
+                    {% if proof.status == 'pending' %}bg-yellow-500 animate-pulse
+                    {% elif proof.status == 'approved' %}bg-green-500
+                    {% else %}bg-red-500{% endif %}"></span>
+                  {{ proof.get_status_display }}
+                </span>
+              </td>
+              <td class="p-5">
+                <div class="flex gap-2">
+                  {% if proof.status == 'pending' %}
+                  <form method="post" action="{% url 'approve_payment_proof' proof.id %}" class="inline">
+                    {% csrf_token %}
+                    <button class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-medium shadow-lg hover:shadow-green-400/50 transform hover:-translate-y-0.5 transition-all duration-200 text-sm inline-flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
+                      Approve
+                    </button>
+                  </form>
+
+                  <form method="post" action="{% url 'reject_payment_proof' proof.id %}" class="inline">
+                    {% csrf_token %}
+                    <button class="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-medium shadow-lg hover:shadow-red-400/50 transform hover:-translate-y-0.5 transition-all duration-200 text-sm inline-flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                      Reject
+                    </button>
+                  </form>
+                  {% else %}
+                    <span class="px-5 py-2.5 bg-gray-100 text-gray-500 rounded-xl text-sm italic inline-flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                      No actions
+                    </span>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
-        <p class="text-center text-gray-600">
-          No payment proofs available.
-        </p>
+        <div class="text-center py-16">
+          <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+          </div>
+          <p class="text-gray-500 text-xl font-medium">No pending payment approvals</p>
+          <p class="text-gray-400 mt-2">Payment requests will appear here when customers submit them</p>
+        </div>
       {% endif %}
     </div>
 
     {% endif %}
   </div>
 </section>
+
+<style>
+  /* Custom animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
+
+  /* Form styling */
+  select, input[type="file"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #fed7aa;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s;
+    background: white;
+  }
+
+  select:focus, input[type="file"]:focus {
+    outline: none;
+    border-color: #FF6B00;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+  }
+
+  select:hover, input[type="file"]:hover {
+    border-color: #FF8C00;
+  }
+
+  input[type="file"] {
+    cursor: pointer;
+    padding: 10px;
+  }
+
+  input[type="file"]::file-selector-button {
+    padding: 8px 16px;
+    background: linear-gradient(to right, #FF6B00, #FF8C00);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 12px;
+    transition: all 0.2s;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #FF6B00, #FF8C00);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #e85d00, #FF6B00);
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Add smooth entrance animation to table rows
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach((row, index) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(10px)';
+      setTimeout(() => {
+        row.style.transition = 'all 0.3s ease-out';
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, index * 50);
+    });
+  });
+</script>
 
 {% endblock %}

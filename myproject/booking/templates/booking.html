@@ -2,20 +2,16 @@
 {% load static %}
 {% block content %}
 
-<!-- AOS CSS -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 
-<section
-  class="min-h-screen bg-gradient-to-br from-[#f0f4ff] to-[#ffffff] py-16 px-4"
->
+<section class="min-h-screen bg-gradient-to-br from-[#f0f4ff] to-[#ffffff] py-16 px-4">
   <div
     class="max-w-6xl mx-auto bg-white bg-opacity-80 backdrop-blur-lg rounded-3xl shadow-2xl p-10 md:p-14 grid grid-cols-1 md:grid-cols-2 gap-12"
     data-aos="fade-up"
-    data-aos-duration="1000"
   >
 
-    <!-- LEFT COLUMN -->
-    <div class="space-y-6" data-aos="fade-right" data-aos-delay="200">
+    <!-- LEFT -->
+    <div class="space-y-6" data-aos="fade-right">
 
       {% if provider_service.service.image %}
         <img
@@ -29,41 +25,41 @@
         {{ provider_service.service.title }}
       </h2>
 
-      <p class="text-gray-600 text-lg leading-relaxed">
+      <p class="text-gray-600 text-lg">
         {{ provider_service.service.description }}
       </p>
 
-      <!-- SERVICE META -->
       <div class="bg-gray-50 rounded-xl p-5 space-y-3 shadow-sm">
-
         <div>
           <p class="text-sm font-medium text-gray-500">Provider</p>
-          <p class="text-lg font-semibold text-gray-800">
-            {{ provider_service.provider.username }}
-          </p>
+          <p class="text-lg font-semibold">{{ provider_service.provider.username }}</p>
         </div>
-
         <div>
           <p class="text-sm font-medium text-gray-500">City</p>
-          <p class="text-lg font-semibold text-gray-800">
-            {{ provider_service.city.name }}
-          </p>
+          <p class="text-lg font-semibold">{{ provider_service.city.name }}</p>
         </div>
-
-
       </div>
     </div>
 
-    <!-- RIGHT COLUMN -->
-    <div class="space-y-6" data-aos="fade-left" data-aos-delay="300">
+    <!-- RIGHT -->
+    <div class="space-y-6" data-aos="fade-left">
 
       <h2 class="text-2xl font-bold text-gray-800 border-b pb-2">
         Book This Service
       </h2>
 
-      <form method="POST" class="space-y-5">
+      <form method="POST" class="space-y-5" id="bookingForm">
         {% csrf_token %}
 
+        <!-- ADDRESS -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">
+            Service Address
+          </label>
+          {{ form.address }}
+        </div>
+
+        <!-- DATE -->
         <div>
           <label class="block text-sm font-medium text-gray-600 mb-1">
             Select Date
@@ -71,6 +67,7 @@
           {{ form.date }}
         </div>
 
+        <!-- TIME -->
         <div>
           <label class="block text-sm font-medium text-gray-600 mb-1">
             Select Time
@@ -80,28 +77,52 @@
 
         <button
           type="submit"
-          class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold transition-all shadow-md"
+          class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold shadow-md"
         >
           Confirm Booking
         </button>
       </form>
 
-      <p class="text-gray-500 text-sm text-center mt-3">
-        You will upload payment proof after the service is completed.
+      <p class="text-gray-500 text-sm text-center">
+        Payment will be requested after service completion.
       </p>
 
     </div>
   </div>
 </section>
 
-<!-- AOS Script -->
+<!-- TOAST -->
+<div id="toast"
+     class="fixed bottom-6 right-6 bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg hidden z-50">
+</div>
+
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-  AOS.init({
-    once: true,
-    duration: 800,
-    easing: 'ease-in-out',
-  });
+  AOS.init({ once: true });
+
+  const form = document.getElementById("bookingForm");
+  const dateInput = form.querySelector('input[type="date"]');
+  const toast = document.getElementById("toast");
+
+  form.addEventListener("submit", function (e) {
+  if (!dateInput.value) return;
+
+  const selectedDate = new Date(dateInput.value + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (selectedDate < today) {
+    e.preventDefault();
+    showToast("❌ You cannot select a past date");
+  }
+});
+
+
+  function showToast(message) {
+    toast.textContent = message;
+    toast.classList.remove("hidden");
+    setTimeout(() => toast.classList.add("hidden"), 3000);
+  }
 </script>
 
 {% endblock %}
