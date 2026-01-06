@@ -3,77 +3,166 @@
 
 {% block content %}
 
-<!-- ✅ Flash Messages -->
+<!-- Flash Messages -->
 {% if messages %}
-  <div class="max-w-xl mx-auto mt-8 px-4">
+  <div class="fixed top-24 right-4 z-50 space-y-4 animate-slide-in">
     {% for message in messages %}
-      <div class="p-4 rounded-xl text-white font-medium text-center shadow-lg
+      <div class="p-5 rounded-2xl text-white font-semibold shadow-2xl backdrop-blur-md transform transition-all duration-300 hover:scale-105 max-w-md
         {% if message.tags == 'success' %}
-          bg-green-500
+          bg-gradient-to-r from-green-500 to-green-600
         {% elif message.tags == 'error' %}
-          bg-red-500
+          bg-gradient-to-r from-red-500 to-red-600
         {% else %}
-          bg-gray-600
-        {% endif %}">
-        {{ message }}
+          bg-gradient-to-r from-gray-600 to-gray-700
+        {% endif %}" id="flash-message-{{ forloop.counter }}">
+        <div class="flex items-center gap-3">
+          {% if message.tags == 'success' %}
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          {% elif message.tags == 'error' %}
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          {% endif %}
+          <span>{{ message }}</span>
+        </div>
       </div>
     {% endfor %}
   </div>
 {% endif %}
 
-<!-- ✅ Hero Section -->
-<section class="bg-gradient-to-br from-[#FF6B00] to-[#FFA500] text-white py-24 text-center px-4">
-  <h1 class="text-5xl md:text-6xl font-extrabold mb-4" data-aos="zoom-in">
-    Book Home Services Instantly
-  </h1>
-  <p class="text-lg md:text-xl mb-6 max-w-2xl mx-auto"
-     data-aos="fade-up"
-     data-aos-delay="150">
-    Cleaning, Repairs, AC Service, Electrician & More
-  </p>
-  <a href="{% url 'services' %}"
-     class="bg-white text-[#FF6B00] px-6 py-3 rounded-full font-bold hover:bg-[#FFD700] hover:text-[#2D2D2D] transition-all"
-     data-aos="fade-up"
-     data-aos-delay="300">
-     Browse Services
-  </a>
+<!-- Hero Section -->
+<section class="relative bg-gradient-to-br from-[#FF6B00] via-[#FF8C00] to-[#FFA500] text-white py-24 sm:py-32 px-4 overflow-hidden">
+  <!-- Decorative Elements -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-yellow-500/20 rounded-full blur-3xl"></div>
+  
+  <div class="max-w-6xl mx-auto text-center relative z-10">
+    <div data-aos="zoom-in">
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-6 drop-shadow-2xl leading-tight">
+        Book Home Services
+        <span class="block bg-gradient-to-r from-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+          Instantly
+        </span>
+      </h1>
+    </div>
+    
+    <p class="text-xl sm:text-2xl mb-8 max-w-3xl mx-auto opacity-95 leading-relaxed"
+       data-aos="fade-up"
+       data-aos-delay="150">
+      Professional cleaning, repairs, AC service, electricians & more at your doorstep
+    </p>
+    
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center"
+         data-aos="fade-up"
+         data-aos-delay="300">
+      <a href="{% url 'services' %}"
+         class="group bg-white text-[#FF6B00] px-8 py-4 rounded-full font-bold text-lg shadow-2xl hover:shadow-white/50 hover:scale-105 transition-all duration-300 inline-flex items-center gap-2">
+        Browse Services
+        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+      
+      <a href="#how-it-works"
+         class="group bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-[#FF6B00] transition-all duration-300 inline-flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Learn How
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto" data-aos="fade-up" data-aos-delay="400">
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+        <div class="text-3xl font-bold mb-1">500+</div>
+        <div class="text-sm opacity-90">Services</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+        <div class="text-3xl font-bold mb-1">50k+</div>
+        <div class="text-sm opacity-90">Bookings</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+        <div class="text-3xl font-bold mb-1">10k+</div>
+        <div class="text-sm opacity-90">Providers</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+        <div class="text-3xl font-bold mb-1">4.8★</div>
+        <div class="text-sm opacity-90">Rating</div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- ✅ Top Services -->
-<section class="py-20 bg-[#FFF9F0] px-4">
-  <div class="max-w-7xl mx-auto text-center">
-    <h2 class="text-3xl font-bold mb-14 text-[#2D2D2D]" data-aos="fade-up">
-      Top Services
-    </h2>
+<!-- Top Services -->
+<section class="py-20 bg-gradient-to-br from-[#FFEFBA] via-[#FFF5E1] to-[#FFFFFF] px-4 relative overflow-hidden">
+  <!-- Decorative Elements -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-yellow-200/20 rounded-full blur-3xl"></div>
 
-    <div class="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+  <div class="max-w-7xl mx-auto relative z-10">
+    <div class="text-center mb-16" data-aos="fade-up">
+      <h2 class="text-4xl sm:text-5xl font-extrabold mb-4 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] bg-clip-text text-transparent">
+        Top Services
+      </h2>
+      <div class="h-1.5 w-24 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] rounded-full mx-auto mb-4"></div>
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+        Choose from our most popular professional services
+      </p>
+    </div>
+
+    <div class="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {% for service in top_services %}
-        <div class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 group"
+        <div class="group bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-white/50 ring-2 ring-orange-100/50 hover:ring-orange-300 hover:-translate-y-2"
              data-aos="zoom-in"
              data-aos-delay="{{ forloop.counter0|add:'1' }}00">
 
           <!-- Image -->
-          <div class="overflow-hidden rounded-t-3xl">
+          <div class="relative overflow-hidden">
             {% if service.image %}
               <img src="{{ service.image.url }}"
                    alt="{{ service.title }}"
-                   class="w-full h-52 object-cover transform group-hover:scale-110 transition duration-500">
+                   class="w-full h-56 object-cover transform group-hover:scale-110 transition duration-700">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             {% else %}
-              <div class="w-full h-52 bg-gray-100 flex items-center justify-center text-gray-400">
-                No Image
+              <div class="w-full h-56 bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
+                <svg class="w-20 h-20 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
               </div>
             {% endif %}
+            
+            <!-- Badge -->
+            <div class="absolute top-4 right-4 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+              Popular
+            </div>
           </div>
 
           <!-- Content -->
-          <div class="p-5 text-left">
-            <h4 class="text-lg font-semibold text-gray-800">
+          <div class="p-6">
+            <h4 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-[#FF6B00] transition-colors">
               {{ service.title }}
             </h4>
 
+            <p class="text-sm text-gray-600 mb-4 line-clamp-2">
+              {% if service.description %}
+                {{ service.description|truncatewords:15 }}
+              {% else %}
+                Professional service providers ready to help you
+              {% endif %}
+            </p>
+
             <a href="{% url 'service_detail' service.id %}"
-               class="inline-block mt-4 text-sm font-medium text-[#FF6B00] bg-[#FFE6CC] px-4 py-2 rounded-full hover:bg-[#FFD9B3] transition">
-              🔍 View Providers
+               class="group/btn inline-flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] px-5 py-2.5 rounded-xl hover:shadow-orange-400/50 shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              View Providers
+              <svg class="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
             </a>
           </div>
         </div>
@@ -81,47 +170,211 @@
     </div>
 
     <!-- View All Button -->
-    <div class="mt-12">
+    <div class="mt-16 text-center" data-aos="fade-up">
       <a href="{% url 'services' %}"
-         class="inline-block bg-[#FF6B00] text-white px-6 py-3 rounded-full hover:bg-[#FFA500] font-semibold transition">
-         View All Services
+         class="group inline-flex items-center gap-3 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] text-white px-10 py-4 rounded-full font-bold text-lg shadow-2xl hover:shadow-orange-400/50 transition-all duration-300 transform hover:-translate-y-1 border-b-4 border-[#e85d00]">
+        View All Services
+        <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
       </a>
     </div>
   </div>
 </section>
 
-<!-- ✅ How It Works -->
-<section class="py-16 bg-[#FFF9F0] px-4">
-  <div class="max-w-6xl mx-auto text-center">
-    <h2 class="text-3xl font-bold mb-12" data-aos="fade-up">
-      How It Works
-    </h2>
+<!-- How It Works -->
+<section id="how-it-works" class="py-20 bg-white px-4">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16" data-aos="fade-up">
+      <h2 class="text-4xl sm:text-5xl font-extrabold mb-4 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] bg-clip-text text-transparent">
+        How It Works
+      </h2>
+      <div class="h-1.5 w-24 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] rounded-full mx-auto mb-4"></div>
+      <p class="text-gray-600 text-lg">
+        Get started in three simple steps
+      </p>
+    </div>
 
-    <div class="grid gap-10 grid-cols-1 md:grid-cols-3">
-      <div data-aos="fade-right">
-        <div class="text-5xl mb-3">📱</div>
-        <h4 class="font-semibold text-lg">Choose a Service</h4>
+    <div class="grid gap-12 grid-cols-1 md:grid-cols-3">
+      <!-- Step 1 -->
+      <div class="relative group" data-aos="fade-right">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8 border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+          <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-6 transition-transform">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-[#FF6B00] to-[#FF8C00] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            1
+          </div>
+          <h4 class="font-bold text-2xl text-gray-800 mb-3 text-center">Choose a Service</h4>
+          <p class="text-gray-600 text-center">
+            Browse through our wide range of professional services and select what you need
+          </p>
+        </div>
       </div>
-      <div data-aos="fade-up">
-        <div class="text-5xl mb-3">📆</div>
-        <h4 class="font-semibold text-lg">Pick a Provider & Date</h4>
+
+      <!-- Step 2 -->
+      <div class="relative group" data-aos="fade-up">
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8 border-2 border-orange-200 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+          <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-[#FF6B00] to-[#FF8C00] rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-6 transition-transform">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-[#FF6B00] to-[#FF8C00] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            2
+          </div>
+          <h4 class="font-bold text-2xl text-gray-800 mb-3 text-center">Pick Provider & Date</h4>
+          <p class="text-gray-600 text-center">
+            Select from verified providers and schedule at your convenient time
+          </p>
+        </div>
       </div>
-      <div data-aos="fade-left">
-        <div class="text-5xl mb-3">🏠</div>
-        <h4 class="font-semibold text-lg">Relax, We’ll Handle It</h4>
+
+      <!-- Step 3 -->
+      <div class="relative group" data-aos="fade-left">
+        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-3xl p-8 border-2 border-green-200 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+          <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-6 transition-transform">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+          </div>
+          <div class="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-[#FF6B00] to-[#FF8C00] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            3
+          </div>
+          <h4 class="font-bold text-2xl text-gray-800 mb-3 text-center">Relax, We Handle It</h4>
+          <p class="text-gray-600 text-center">
+            Sit back and let our professionals take care of everything for you
+          </p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ✅ Auto-hide Flash Message -->
+<!-- Features Section -->
+<section class="py-20 bg-gradient-to-br from-gray-50 to-gray-100 px-4">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16" data-aos="fade-up">
+      <h2 class="text-4xl font-extrabold mb-4 text-gray-800">
+        Why Choose Us?
+      </h2>
+      <div class="h-1.5 w-24 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] rounded-full mx-auto"></div>
+    </div>
+
+    <div class="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center" data-aos="zoom-in">
+        <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <h4 class="font-bold text-lg mb-2">Verified Providers</h4>
+        <p class="text-sm text-gray-600">All professionals are background checked</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center" data-aos="zoom-in" data-aos-delay="100">
+        <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h4 class="font-bold text-lg mb-2">Best Prices</h4>
+        <p class="text-sm text-gray-600">Transparent pricing with no hidden fees</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center" data-aos="zoom-in" data-aos-delay="200">
+        <div class="w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h4 class="font-bold text-lg mb-2">Quick Service</h4>
+        <p class="text-sm text-gray-600">Same-day booking available for urgent needs</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center" data-aos="zoom-in" data-aos-delay="300">
+        <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+          </svg>
+        </div>
+        <h4 class="font-bold text-lg mb-2">100% Satisfaction</h4>
+        <p class="text-sm text-gray-600">Quality guaranteed or your money back</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.4s ease-out;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #FF6B00, #FF8C00);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #e85d00, #FF6B00);
+  }
+</style>
+
 <script>
+  // Auto-hide Flash Message
   setTimeout(() => {
-    const alertBox = document.querySelector(
-      '[class*="bg-green-500"], [class*="bg-red-500"], [class*="bg-gray-600"]'
-    );
-    if (alertBox) alertBox.style.display = 'none';
+    {% if messages %}
+      {% for message in messages %}
+        const msg = document.getElementById('flash-message-{{ forloop.counter }}');
+        if (msg) {
+          msg.style.opacity = '0';
+          msg.style.transform = 'translateX(100%)';
+          setTimeout(() => msg.remove(), 400);
+        }
+      {% endfor %}
+    {% endif %}
   }, 4000);
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
 </script>
 
 {% endblock %}
