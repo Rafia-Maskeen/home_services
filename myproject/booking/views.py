@@ -5,6 +5,8 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Avg
 from django.http import JsonResponse
+from booking.utils.emails import send_booking_status_email
+from booking.utils.emails import send_payment_status_email
 from decimal import Decimal
 from .models import (
     Service,
@@ -276,36 +278,33 @@ def accept_booking(request, booking_id):
     booking = get_object_or_404(
         Booking,
         id=booking_id,
-        provider_service__provider=request.user,
-        status='pending'
+        provider_service__provider=request.user
     )
 
-    if request.method == 'POST':
-        booking.status = 'confirmed'
-        booking.save()
-        messages.success(request, "Booking confirmed.")
+    booking.status = "confirmed"
+    booking.save(update_fields=["status"])
 
-    return redirect('provider_dashboard')
+    send_booking_status_email(booking, "accepted")
 
+    messages.success(request, "Booking accepted and customer notified.")
+    return redirect("provider_dashboard")
 
 @login_required
 def deny_booking(request, booking_id):
-    if request.user.role != 'provider':
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('index')
     booking = get_object_or_404(
-    Booking,
-    id=booking_id,
-    provider_service__provider=request.user
-)
+        Booking,
+        id=booking_id,
+        provider_service__provider=request.user
+    )
 
-    if request.method == 'POST' and booking.status == 'pending':
-        booking.status = 'cancelled'
-        booking.save()
-        messages.error(request, f'Booking {booking.id} cancelled successfully.')
-    else:
-        messages.error(request, 'This booking cannot be cancelled.')
-    return redirect('provider_dashboard')
+    booking.status = "rejected"
+    booking.save(update_fields=["status"])
+
+    send_booking_status_email(booking, "rejected")
+
+    messages.error(request, "Booking rejected and customer notified.")
+    return redirect("provider_dashboard")
+
 @login_required
 @transaction.atomic
 def complete_booking(request, booking_id):
@@ -335,51 +334,56 @@ def complete_booking(request, booking_id):
 
 
 
+@login_required
 def approve_payment_proof(request, proof_id):
-    proof = get_object_or_404(PaymentProof, id=proof_id)
+    proof = get_object_or_404(
+        PaymentProof,
+        id=proof_id,
+        booking__provider_service__provider=request.user
+    )
+
+    if proof.status == "approved":
+        messages.warning(request, "Payment already approved.")
+        return redirect("provider_payments")
+
     booking = proof.booking
     provider = booking.provider_service.provider
 
     if booking.final_price is None:
-        messages.error(
-            request,
-            "Cannot approve payment. Final price is not set for this booking."
-        )
-        return redirect('provider_payments')
+        messages.error(request, "Final price not set.")
+        return redirect("provider_payments")
 
-    # SAFETY: ensure wallet_balance is never None
     provider.wallet_balance = provider.wallet_balance or Decimal("0.00")
-
     provider.wallet_balance += booking.final_price
 
-    proof.status = 'approved'
-    booking.status = 'completed'
+    proof.status = "approved"
+    booking.status = "completed"
 
-    provider.save()
-    booking.save()
-    proof.save()
+    provider.save(update_fields=["wallet_balance"])
+    booking.save(update_fields=["status"])
+    proof.save(update_fields=["status"])
 
-    messages.success(request, "Payment approved successfully.")
-    return redirect('provider_payments')
+    send_payment_status_email(proof, "approved")
+
+    messages.success(request, "Payment approved and customer notified.")
+    return redirect("provider_payments")
 
 @login_required
 def reject_payment_proof(request, proof_id):
     proof = get_object_or_404(
         PaymentProof,
         id=proof_id,
-        booking__provider_service__provider=request.user,
-        status='pending'
+        booking__provider_service__provider=request.user
     )
 
-    if request.method == 'POST':
-        proof.status = 'rejected'
-        proof.save()
-        messages.error(
-            request,
-            f'Payment proof for booking {proof.booking.id} rejected.'
-        )
+    proof.status = "rejected"
+    proof.save(update_fields=["status"])
 
-    return redirect('provider_payments')
+    send_payment_status_email(proof, "rejected")
+
+    messages.error(request, "Payment rejected and customer notified.")
+    return redirect("provider_payments")
+
 
 @login_required
 def customer_polling(request):

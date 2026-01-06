@@ -207,3 +207,10 @@ JAZZMIN_SETTINGS = {
 #     "use_google_fonts_cdn": True,
 # }
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "rafiamaskeen@gmail.com"
+EMAIL_HOST_PASSWORD = "ytrn ujqn tblw jdna"
+DEFAULT_FROM_EMAIL = "HomeService <rafiamaskeen@gmail.com>"
